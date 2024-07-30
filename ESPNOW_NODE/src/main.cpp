@@ -204,18 +204,12 @@
 
 
 
-#define NODE
-
-
-
 #include "Arduino.h"
+#include <Ticker.h>
 
 // 2e:3a:e8:3d:f3:8d
-uint8_t gw_mac[] = {0x2C, 0x3A, 0xE8, 0x3D, 0xF3, 0x8D};
-uint8_t node_mac[] = {0x40, 0x91, 0x51, 0x5A, 0x5E, 0xFA};
-
-
-#ifdef NODE
+// uint8_t gw_mac[] = {0x2C, 0x3A, 0xE8, 0x3D, 0xF3, 0x8D};
+// uint8_t node_mac[] = {0x40, 0x91, 0x51, 0x5A, 0x5E, 0xFA};
 
 #include <espnow-node.h>
 
@@ -226,12 +220,33 @@ uint8_t node_mac[] = {0x40, 0x91, 0x51, 0x5A, 0x5E, 0xFA};
 #define SCREEN_WIDTH 128
 #define SCREEN_HEIGHT 64
 
-uint32_t lastMillis = 0;
-
+Ticker ticker;
 ENNodeInfo NodeInfo;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 OneButton button(12, true);
+
+void displayForSeconds(uint16_t seconds) {
+    display.display();
+    ticker.detach();
+    ticker.once(seconds, []() {
+        schedule_function([]() {
+            display.clearDisplay();
+            display.setCursor(0, 0);
+            display.println("Idle");
+            display.display();
+        });
+    });
+}
+
+void displayGatewayInfo() {
+    if (!Node.isPaired())
+        return;
+    display.clearDisplay();
+    display.setCursor(0, 0);
+    display.printf("GW ID: %s\nChannel: %d", Node.gatewayId().c_str(), Node.gatewayChannel());
+    display.display();
+}
 
 void setup() {
     // IO
@@ -256,7 +271,7 @@ void setup() {
     Serial.println(WiFi.macAddress());
 
     WiFi.mode(WIFI_STA);
-    wifi_set_channel(11);
+    // wifi_set_channel(11);
     NodeBegin();
 
     WiFi.printDiag(Serial);
@@ -278,6 +293,17 @@ void setup() {
         display.setCursor(0, 0);
         display.println("Pairing");
         display.display();
+        ticker.detach();
+        ticker.attach(1, []() {
+            schedule_function([](){
+                if (Node.isPaired())
+                    return;
+                display.clearDisplay();
+                display.setCursor(0, 0);
+                display.printf("Pairing: %ds", Node.pairingRemaining());
+                display.display();
+            });
+        });
     });
 
     NodeInfo.name = "Node1";
@@ -301,28 +327,38 @@ void setup() {
                 return true;
             });
 
-    Node.setNodeInfo(&NodeInfo);
+    Node.nodeInfo(&NodeInfo);
 
-    Node.setGatewayMac(gw_mac);
+//    Node.setGatewayMac(gw_mac);
 
     Node.onPairingTimeout([]() {
         display.clearDisplay();
         display.setCursor(0, 0);
-        display.printf("Pairing\ntimeout");
-        display.display();
+        display.printf("Pairing -> timeout");
+        displayForSeconds(5);
     });
 
     Node.onPairingSuccess([]() {
         display.clearDisplay();
         display.setCursor(0, 0);
-        display.printf("Pairing\nsuccess");
-        display.display();
+        display.printf("Pairing -> success\nGW ID: %s\nChannel: %d", Node.gatewayId().c_str(), Node.gatewayChannel());
+        displayForSeconds(10);
     });
 
-    esp_now_register_send_cb([](uint8_t *mac, uint8_t status) {
-        Serial.printf("[%d] Send to %02x:%02x:%02x:%02x:%02x:%02x\n", status, mac[0], mac[1], mac[2], mac[3], mac[4],
-                      mac[5]);
+    Node.onCommand([](const String& cmd, const String& value) {
+        display.clearDisplay();
+        display.setCursor(0, 0);
+        display.printf("%s: %s", cmd.c_str(), value.c_str());
+        displayForSeconds(5);
     });
+
+    // esp_now_register_send_cb([](uint8_t *mac, uint8_t status) {
+    //     Serial.printf("[%d] Send to %02x:%02x:%02x:%02x:%02x:%02x\n", status, mac[0], mac[1], mac[2], mac[3], mac[4],
+    //                   mac[5]);
+    // });
+
+    displayGatewayInfo();
+    displayForSeconds(10);
 
 } // setup
 
@@ -340,99 +376,3 @@ void loop() {
 //        Node.sendSyncProps();
 //    }
 }
-
-#endif
-
-
-#ifndef NODE
-
-#include <espnow-gateway.h>
-#include "OneButton.h"
-#include "ESP8266WebServer.h"
-
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
-
-OneButton button(0, true);
-
-ESP8266WebServer sv(80);
-
-void setup() {
-    // IO
-    pinMode(LED_BUILTIN, OUTPUT);
-    digitalWrite(LED_BUILTIN, HIGH);
-
-    // Start serial
-    Serial.begin(115200);
-    while (!Serial)
-        delay(1000);
-
-    delay(5000);
-
-    Serial.print("ESP Board MAC Address:  ");
-    Serial.println(WiFi.macAddress());
-
-    wifi_get_macaddr(STATION_IF, gw_mac);
-    Serial.printf("Gateway MAC: %02x:%02x:%02x:%02x:%02x:%02x\n", gw_mac[0], gw_mac[1], gw_mac[2], gw_mac[3], gw_mac[4],
-                  gw_mac[5]);
-
-    WiFi.mode(WIFI_AP_STA);
-    Serial.print("Connecting to WiFi..");
-    WiFi.begin("C21.20", "diamondc2120");
-    while (WiFi.status() != WL_CONNECTED) {
-        delay(1000);
-        Serial.print(".");
-    }
-    Serial.println("Connected");
-    Serial.print("IP Address: ");
-    Serial.println(WiFi.localIP());
-    Serial.print("RSSI: ");
-    Serial.println(WiFi.RSSI());
-    Serial.print("Channel: ");
-    Serial.println(WiFi.channel());
-
-    // init espnow
-    wifi_set_macaddr(STATION_IF, gw_mac);
-    GatewayBegin();
-
-    button.attachLongPressStart([]() {
-        Serial.println("Enter pairing mode");
-        Gateway.startPairing();
-    });
-
-//    Node.onPairingTimeout([](){
-//        display.clearDisplay();
-//        display.setCursor(0, 0);
-//        display.printf("Pairing\ntimeout");
-//        display.display();
-//    });
-
-    Gateway.onPairingRequest([](uint8_t *mac) {
-        digitalWrite(LED_BUILTIN, LOW);
-    });
-
-//    addPeer(node_mac);
-
-    sv.on("/", []() {
-        sv.send(200, "text/plain", "Hello World");
-    });
-
-    sv.on("/command", []() {
-        String action = sv.arg("action");
-        String params = sv.arg("params");
-        Gateway.sendCommand(node_mac, action, params);
-        sv.send(200, "text/plain", "OK");
-    });
-
-    sv.begin();
-
-} // setup
-
-
-void loop() {
-    Gateway.loop();
-    button.tick();
-    sv.handleClient();
-}
-
-#endif
