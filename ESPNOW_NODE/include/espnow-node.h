@@ -7,7 +7,6 @@
 #ifdef ESP8266
 
 #include "LittleFS.h"
-
 #define ENFS LittleFS
 
 #endif
@@ -146,12 +145,13 @@ private:
     String _path = "/gateway";
 
     bool paired = false;
-    uint8_t gwMac[6];
+    uint8_t gwMac[6] = {0};
     String gwId;
     uint8_t gwChannel = 0;
 
-    uint16_t _pairingRequestId = 0;
-    uint32_t _pairingRequestTime = 0;
+    String _requestFor;
+    uint16_t _requestId = 0;
+    uint32_t _requestTime = 0;
 
     uint32_t _pairingTimeout = 30000;
     uint32_t _sendTimeout = 1000;
@@ -160,7 +160,7 @@ private:
     uint8_t _sendMaxRetries = 3;
     uint8_t _sendRetries = 0;
 
-    ENNodeInfo *_nodeInfo;
+    ENNodeInfo *_nodeInfo = nullptr;
 
     struct ENMessage {
         ENData data;
@@ -180,10 +180,21 @@ private:
     std::function<void(const String &, const String &)> _onCommand;
     std::function<void(uint16_t, bool, const String &)> _onResponse;
 
+    /**
+     * @brief Generate random id
+     * 
+     * @return uint16_t 
+     */
     static uint16_t _generateId() {
         return random(1, 65535);
     }
 
+    /**
+     * @brief Send data to gateway
+     * 
+     * @param data ENData
+     * @param fallback true: resend if timeout
+     */
     void _sendToGateway(ENData *data, bool fallback = true) {
         data->send(const_cast<uint8_t *>(gwMac));
         if (fallback) {
@@ -192,7 +203,11 @@ private:
         }
     }
 
-    void _sendPairingRequest() {
+    /**
+     * @brief broadcast pairing request
+     * 
+     */
+    void _sendRequestRequest() {
         if (_sendRetries == 0) {
             ++gwChannel;
             _sendRetries = _sendMaxRetries;
@@ -200,13 +215,18 @@ private:
         }
 
         ENData data;
-        data.id(_pairingRequestId);
+        data.id(_requestId);
         data.MAN("pairing-request");
         data.send(ESP_NOW_BROADCAST_ADDRESS);
-        DEBUG_ESP_NOW("Pairing request sent: requestId = %d, channel = %d\n", _pairingRequestId, WiFi.channel());
+        DEBUG_ESP_NOW("Pairing request sent: requestId = %d, channel = %d\n", _requestId, WiFi.channel());
         --_sendRetries;
     }
 
+    /**
+     * @brief Send device info to gateway
+     * 
+     * @param id 
+     */
     void _sendDeviceInfo(uint16_t id = 0) {
         ENData data;
         if (!id) {
@@ -221,6 +241,16 @@ private:
             _nodeInfo->getProps(&data);
         }
         _sendToGateway(&data, false);
+    }
+
+    void _requestWiFiCredentials() {
+        ENData req;
+        _requestId = _generateId();
+        _requestTime = millis();
+        _requestFor = "wifi";
+        req.id(_requestId);
+        req.MAN("request-wifi");
+        _sendToGateway(&req, false);
     }
 
 public:
@@ -300,8 +330,9 @@ public:
     /* ====== Pairing functions ====== */
 
     void startPairing() {
-        _pairingRequestId = _generateId();
-        _pairingRequestTime = millis();
+        _requestId = _generateId();
+        _requestTime = millis();
+        _requestFor = "pairing";
         
         // clear current gateway info
         paired = false;
@@ -313,23 +344,24 @@ public:
         gwChannel = 0;
         _sendRetries = _sendMaxRetries;
         wifi_set_channel(gwChannel);
-        _sendPairingRequest();
+        _sendRequestRequest();
     }
 
-    void endPairing() {
-        _pairingRequestId = 0;
-        _pairingRequestTime = 0;
+    void endRequest() {
+        _requestId = 0;
+        _requestTime = 0;
+        _requestFor = "";
     }
 
     uint8_t pairingRemaining() {
         uint8_t remaining = 0;
-        if (_pairingRequestId && _pairingRequestTime) {
-            remaining = (_pairingTimeout - (millis() - _pairingRequestTime)) / 1000;
+        if (_requestFor == "pairing" && _requestId && _requestTime) {
+            remaining = (_pairingTimeout - (millis() - _requestTime)) / 1000;
         }
         return remaining;
     }
 
-    bool isPaired() {
+    [[nodiscard]] bool isPaired() const {
         return paired;
     }
 
@@ -348,7 +380,7 @@ public:
         gwId = id;
     }
 
-    String gatewayId() {
+    [[nodiscard]] String gatewayId() const {
         return gwId;
     }
 
@@ -357,7 +389,7 @@ public:
         wifi_set_channel(gwChannel);
     }
 
-    uint8_t gatewayChannel() {
+    [[nodiscard]] uint8_t gatewayChannel() const {
         return gwChannel;
     }
 
@@ -383,74 +415,95 @@ public:
         ENData enData(data);
         DEBUG_ESP_NOW("Data\n%s\n", enData.c_str());
 
-        // In pairing mode
-        if (_pairingRequestId && _pairingRequestTime) {
-            if (millis() - _pairingRequestTime > _pairingTimeout) {
-                DEBUG_ESP_NOW("Pairing timeout\n");
-                endPairing();
-                if (_onPairingTimeout) {
-                    DEBUG_ESP_NOW("Executing onPairingTimeout callback\n");
-                    schedule_function(_onPairingTimeout);
-                }
-            } else {
-                DEBUG_ESP_NOW("Received pairing message\n");
-                if (enData.id() == _pairingRequestId) {
-                    if (enData.getParam("accept") == "true") {
-                        DEBUG_ESP_NOW("-> Pairing request accepted\n");
-                        paired = true;
-                        endPairing();
-                        addPeer(mac);
-                        gwMac[0] = mac[0];
-                        gwMac[1] = mac[1];
-                        gwMac[2] = mac[2];
-                        gwMac[3] = mac[3];
-                        gwMac[4] = mac[4];
-                        gwMac[5] = mac[5];
-                        gwId = enData.did();
-                        gwChannel = enData.getParam("channel").toInt();
-                        wifi_set_channel(gwChannel);
-                        File file = ENFS.open(_path, "w");
-                        if (file) {
-                            file.printf("%02x:%02x:%02x:%02x:%02x:%02x\n", gwMac[0], gwMac[1], gwMac[2],
-                                        gwMac[3], gwMac[4], gwMac[5]);
-                            file.printf("%s\n", gwId.c_str());
-                            file.printf("%d\n", gwChannel);
-                            file.close();
-                            DEBUG_ESP_NOW("=== Gateway info saved ===\n");
-#ifdef ESPNOW_DEBUG
-                            file = ENFS.open(_path, "r");
+        // In request mode
+        if (_requestId && _requestTime) {
+            if (_requestFor == "pairing") {
+                if (millis() - _requestTime > _pairingTimeout) {
+                    DEBUG_ESP_NOW("Pairing timeout\n");
+                    endRequest();
+                    if (_onPairingTimeout) {
+                        DEBUG_ESP_NOW("Executing onPairingTimeout callback\n");
+                        schedule_function(_onPairingTimeout);
+                    }
+                } else {
+                    DEBUG_ESP_NOW("Received pairing message\n");
+                    if (enData.id() == _requestId) {
+                        if (enData.getParam("accept") == "true") {
+                            DEBUG_ESP_NOW("-> Pairing request accepted\n");
+                            paired = true;
+                            endRequest();
+                            addPeer(mac);
+                            gwMac[0] = mac[0];
+                            gwMac[1] = mac[1];
+                            gwMac[2] = mac[2];
+                            gwMac[3] = mac[3];
+                            gwMac[4] = mac[4];
+                            gwMac[5] = mac[5];
+                            gwId = enData.did();
+                            gwChannel = enData.getParam("channel").toInt();
+                            wifi_set_channel(gwChannel);
+                            File file = ENFS.open(_path, "w");
                             if (file) {
-                                DEBUG_ESP_NOW("====== File content ======\n");
-                                DEBUG_ESP_NOW("%s\n", file.readString().c_str());
-                                DEBUG_ESP_NOW("===========================\n");
+                                file.printf("%02x:%02x:%02x:%02x:%02x:%02x\n", gwMac[0], gwMac[1], gwMac[2],
+                                            gwMac[3], gwMac[4], gwMac[5]);
+                                file.printf("%s\n", gwId.c_str());
+                                file.printf("%d\n", gwChannel);
                                 file.close();
+                                DEBUG_ESP_NOW("=== Gateway info saved ===\n");
+    #ifdef ESPNOW_DEBUG
+                                file = ENFS.open(_path, "r");
+                                if (file) {
+                                    DEBUG_ESP_NOW("====== File content ======\n");
+                                    DEBUG_ESP_NOW("%s\n", file.readString().c_str());
+                                    DEBUG_ESP_NOW("===========================\n");
+                                    file.close();
+                                }
+    #endif
+                            } else {
+                                DEBUG_ESP_NOW("-> Error saving gateway info\n");
                             }
-#endif
-                        } else {
-                            DEBUG_ESP_NOW("-> Error saving gateway info\n");
-                        }
 
-                        schedule_function([this](){
-                            _sendDeviceInfo();
-                            if (_onPairingSuccess) {
-                                DEBUG_ESP_NOW("Executing onPairingSuccess callback\n");
-                                _onPairingSuccess();
-                            }
-                        });
-                    } else {
-                        endPairing();
-                        String reason = enData.getParam("data");
-                        DEBUG_ESP_NOW("-> Pairing request rejected\n");
-                        DEBUG_ESP_NOW("-> Reason: %s\n", reason.c_str());
-                        if (_onPairingFail) {
-                            schedule_function([this, reason](){
-                                DEBUG_ESP_NOW("Executing onPairingFail callback\n");
-                                _onPairingFail(reason);
+                            schedule_function([this](){
+                                _sendDeviceInfo();
+                                if (_onPairingSuccess) {
+                                    DEBUG_ESP_NOW("Executing onPairingSuccess callback\n");
+                                    _onPairingSuccess();
+                                }
                             });
+                        } else {
+                            endRequest();
+                            String reason = enData.getParam("data");
+                            DEBUG_ESP_NOW("-> Pairing request rejected\n");
+                            DEBUG_ESP_NOW("-> Reason: %s\n", reason.c_str());
+                            if (_onPairingFail) {
+                                schedule_function([this, reason](){
+                                    DEBUG_ESP_NOW("Executing onPairingFail callback\n");
+                                    _onPairingFail(reason);
+                                });
+                            }
                         }
                     }
                 }
             }
+            
+            else if (_requestFor == "wifi") {
+                if (enData.id() == _requestId) {
+                    DEBUG_ESP_NOW("Received WiFi credential from gateway");
+                    String ssid = enData.getParam("ssid");
+                    String password = enData.getParam("password");
+                    DEBUG_ESP_NOW("SSID: %s\n", ssid.c_str());
+                    DEBUG_ESP_NOW("Password: %s\n", password.c_str());
+                    WiFi.disconnect();
+                    WiFi.mode(WIFI_AP_STA);
+                    WiFi.persistent(true);
+                    WiFi.setAutoConnect(true);
+                    WiFi.setAutoReconnect(true);
+                    WiFi.begin(ssid, password);
+                    DEBUG_ESP_NOW("Connecting to WiFi\n");
+                    endRequest();
+                }
+            }
+
         } else {
             // compareMacAddress(mac, gwMac)
             if (enData.did() == gwId) {
@@ -536,17 +589,17 @@ public:
 
     void loop() {
         // In pairing mode - send pairing request every 0.5 second
-        if (_pairingRequestId && !paired) {
-            if (millis() - _pairingRequestTime > _pairingTimeout) {
+        if (_requestFor == "pairing" && _requestId && !paired) {
+            if (millis() - _requestTime > _pairingTimeout) {
                 DEBUG_ESP_NOW("Pairing timeout\n");
-                endPairing();
+                endRequest();
                 if (_onPairingTimeout) {
                     DEBUG_ESP_NOW("Executing onPairingTimeout callback\n");
                     _onPairingTimeout();
                 }
             } else if (millis() - _lastSendTime > 700) {
                 _lastSendTime = millis();
-                _sendPairingRequest();
+                _sendRequestRequest();
             }
         }
 
@@ -608,13 +661,18 @@ public:
 
 ENNode Node;
 
-
 void NodeBegin() {
     ENFS.begin();
 
     Node.load();
 
-//    WiFi.mode(WIFI_STA);
+//    if (WiFi.SSID().length()) {
+//        WiFi.mode(WIFI_AP_STA);
+//        WiFi.begin();
+//    } else {
+//        WiFi.mode(WIFI_STA);
+//    }
+   
     if (esp_now_init() != 0) {
         DEBUG_ESP_NOW("Error initializing ESP-NOW\n");
         return;

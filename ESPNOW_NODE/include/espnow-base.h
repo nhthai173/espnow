@@ -19,7 +19,10 @@
 #ifdef ESP8266
 
 #include <ESP8266WiFi.h>
+//#include <WiFiUdp.h>
 #include <espnow.h>
+
+//WiFiUDP UDPClient;
 
 #else // ESP32
 
@@ -134,6 +137,23 @@ public:
         DEBUG_ESP_NOW("%s", _buffer.c_str());
         DEBUG_ESP_NOW("---- End Buffer ----\n");
     }
+
+//    void sendUDP(WiFiUDP *udp, const String &ip, uint16_t port) {
+//        if (!udp) {
+//            udp = new WiFiUDP();
+//        }
+//        udp->beginPacket(ip.c_str(), port);
+//        udp->write((uint8_t *) _buffer.c_str(), _buffer.length());
+//        udp->endPacket();
+//        DEBUG_ESP_NOW("Sent %d bytes to %s:%d\n", _buffer.length(), ip.c_str(), port);
+//        DEBUG_ESP_NOW("------ Buffer ------\n");
+//        DEBUG_ESP_NOW("%s", _buffer.c_str());
+//        DEBUG_ESP_NOW("---- End Buffer ----\n");
+//    }
+//
+//    void sendUDP(const String &ip, uint16_t port) {
+//        sendUDP(&UDPClient, ip, port);
+//    }
 
     const char* c_str() {
         return _buffer.c_str();
