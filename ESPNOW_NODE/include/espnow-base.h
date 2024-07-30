@@ -19,7 +19,10 @@
 #ifdef ESP8266
 
 #include <ESP8266WiFi.h>
+//#include <WiFiUdp.h>
 #include <espnow.h>
+
+//WiFiUDP UDPClient;
 
 #else // ESP32
 
@@ -93,7 +96,7 @@ public:
         _buffer += key + ":" + value + "\r\n";
     }
 
-    String getParam(const String &key) {
+    String getParam(const String &key) const {
         int index = _buffer.indexOf(key);
         if (index == -1) {
             return "";
@@ -103,23 +106,29 @@ public:
         return _buffer.substring(start, end);
     }
 
-    uint16_t id(uint16_t id = 0) {
-        if (id != 0) {
-            _id = id;
-        }
+    uint16_t id() const {
         return _id;
     }
 
-    String MAN(const String &value = "") {
-        if (value != "") {
-            addParam("MAN", value);
-        }
+    void id (uint16_t id) {
+        _id = id;
+    }
+
+    String MAN() const {
         return getParam("MAN");
+    }
+
+    void MAN(const String &value) {
+        addParam("MAN", value);
+    }
+
+    String did() {
+        return getParam("did");
     }
 
     void send(uint8_t *addr) {
         if (!_buffer.startsWith("uid:")) {
-            _buffer = "uid:" + String(_id) + "\r\n" + _buffer;
+            _buffer = "uid:" + String(_id) + "\r\ndid:" + String(ESP.getChipId()) + "\r\n" + _buffer;
             _buffer += "\r";
         }
         esp_now_send(addr, (uint8_t *) _buffer.c_str(), _buffer.length());
@@ -128,6 +137,23 @@ public:
         DEBUG_ESP_NOW("%s", _buffer.c_str());
         DEBUG_ESP_NOW("---- End Buffer ----\n");
     }
+
+//    void sendUDP(WiFiUDP *udp, const String &ip, uint16_t port) {
+//        if (!udp) {
+//            udp = new WiFiUDP();
+//        }
+//        udp->beginPacket(ip.c_str(), port);
+//        udp->write((uint8_t *) _buffer.c_str(), _buffer.length());
+//        udp->endPacket();
+//        DEBUG_ESP_NOW("Sent %d bytes to %s:%d\n", _buffer.length(), ip.c_str(), port);
+//        DEBUG_ESP_NOW("------ Buffer ------\n");
+//        DEBUG_ESP_NOW("%s", _buffer.c_str());
+//        DEBUG_ESP_NOW("---- End Buffer ----\n");
+//    }
+//
+//    void sendUDP(const String &ip, uint16_t port) {
+//        sendUDP(&UDPClient, ip, port);
+//    }
 
     const char* c_str() {
         return _buffer.c_str();
