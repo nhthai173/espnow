@@ -19,6 +19,7 @@ ENNodeInfo NodeInfo;
 
 Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 OneButton button(12, true);
+String buttonValue = "idle";
 
 WiFiEventHandler stationConnectedHandler;
 
@@ -66,21 +67,13 @@ void setup() {
     Serial.print("ESP Board MAC Address:  ");
     Serial.println(WiFi.macAddress());
 
-    WiFi.mode(WIFI_STA);
-    WiFi.persistent(false);
-    WiFi.begin("C21.20", "diamondc2120");
+//    WiFi.mode(WIFI_STA);
+//    WiFi.persistent(false);
+//    WiFi.begin("C21.20", "diamondc2120");
 
-    stationConnectedHandler = WiFi.onStationModeConnected([](const WiFiEventStationModeConnected& event) {
-        Serial.printf("Connected to %s\n", event.ssid.c_str());
-    });
-
-//    while (WiFi.status() != WL_CONNECTED) {
-//        delay(500);
-//        Serial.print(".");
-//    }
-//    Serial.println("Connected");
-//    Serial.print("Local IP: ");
-//    Serial.println(WiFi.localIP());
+//    stationConnectedHandler = WiFi.onStationModeConnected([](const WiFiEventStationModeConnected& event) {
+//        Serial.printf("Connected to %s\n", event.ssid.c_str());
+//    });
 
     NodeBegin();
 
@@ -116,6 +109,19 @@ void setup() {
         });
     });
 
+    button.attachClick([]() {
+       buttonValue = "click";
+       Node.sendSyncProp("button", buttonValue);
+    });
+    button.attachDoubleClick([]() {
+        buttonValue = "dbclick";
+        Node.sendSyncProp("button", buttonValue);
+    });
+    button.attachIdle([]() {
+        buttonValue = "idle";
+        Node.sendSyncProp("button", buttonValue);
+    });
+
     NodeInfo.name = "Node1";
     NodeInfo.type = "ESP8266";
     NodeInfo.model = "security-board";
@@ -132,14 +138,22 @@ void setup() {
                     digitalWrite(LED_BUILTIN, LOW);
                 else if (value == "false")
                     digitalWrite(LED_BUILTIN, HIGH);
-                else
+                else if (value == "toggle") {
+                    bool newState = !digitalRead(LED_BUILTIN);
+                    digitalWrite(LED_BUILTIN, newState);
+                    Node.sendSyncProp("led", newState == LOW ? "true" : "false");
+                } else
                     return false;
                 return true;
             });
+    NodeInfo.addProp(
+            "button",
+            buttonValue,
+            []() {
+                return buttonValue;
+            });
 
     Node.nodeInfo(&NodeInfo);
-
-//    Node.setGatewayMac(gw_mac);
 
     Node.onPairingTimeout([]() {
         display.clearDisplay();
@@ -170,19 +184,11 @@ void setup() {
     displayGatewayInfo();
     displayForSeconds(10);
 
+    Node.sendSyncProps();
+
 } // setup
 
 
 void loop() {
-    Node.loop();
     button.tick();
-
-//    if (millis() - lastMillis > 20000) {
-//        lastMillis = millis();
-//        display.clearDisplay();
-//        display.setCursor(0, 0);
-//        display.printf("Sending sync\n%lu", millis());
-//        display.display();
-//        Node.sendSyncProps();
-//    }
 }
