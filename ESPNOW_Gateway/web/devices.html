@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devices</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/gh/hung1001/font-awesome-pro@4cac1a6/css/all.css" rel="stylesheet"
+        type="text/css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/notiflix@3.2.7/src/notiflix.min.css">
+    <link rel="stylesheet" href="./style.css">
+    <style>
+        .node-card .card-footer {
+            margin-top: -45px;
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .node-card.offline .card-body-container {
+            cursor: not-allowed;
+        }
+
+        .node-card.offline .card-body {
+            pointer-events: none !important;
+            opacity: 0.5;
+        }
+
+        .node-card.offline .card-footer {
+            margin-top: 0px;
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .node-card .form-check-input {
+            width: 2.5em !important;
+            height: 1.3em !important;
+        }
+
+        .node-card .form-control[type="text"] {
+            width: auto;
+            max-width: 50%;
+        }
+    </style>
+</head>
+
+<body>
+
+    <nav class="navbar main-navbar bg-body-tertiary fixed-top">
+        <div class="container-fluid">
+            <div class="navbar-brand fs-4">
+                <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas"
+                    data-bs-target="#offcanvasNavbar">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <span class="ms-3">Devices</span>
+            </div>
+            <div class="offcanvas offcanvas-start" tabindex="-1" id="offcanvasNavbar">
+                <div class="offcanvas-header">
+                    <h5 class="offcanvas-title fs-4">Menu</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body">
+                    <ul class="navbar-nav justify-content-end flex-grow-1 pe-3 fs-5">
+                        <li class="nav-item">
+                            <a class="nav-link" aria-current="page" href="./">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" href="./devices.html">Devices</a>
+                        </li>
+                        <li>
+                            <a class="nav-link" href="./automations.html">Automations</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+            <div>
+                <button class="btn btn-outline-secondary" action="startPairing">Add device</button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Pairing modal -->
+    <div class="modal fade" id="pairModal" tabindex="-1" aria-hidden="true" data-bs-backdrop="static"
+        data-bs-keyboard="false">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-md-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Pairing</h1>
+                </div>
+                <div class="modal-body p-5">
+                    <div class="d-flex justify-content-center progress bg-transparent" style="height: 250px;"></div>
+                    <div class="d-flex justify-content-center mt-5 mb-3">
+                        <button class="btn btn-lg btn-danger d-none" action="stopPairing">Stop</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detail modal -->
+    <div class="modal fade" id="detailModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-md-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="exampleModalLabel">Detail</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                    <table class="table table-bordered table-striped">
+                        <thead>
+                            <tr>
+                                <th scope="col">Key</th>
+                                <th scope="col">Value</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="container-fluid" style="margin-top: 60px;">
+        <div class="row py-4" id="main">
+
+            <div class="col-12 col-node-empty d-flex justify-content-center align-items-center d-none"
+                style="height: calc(100vh - 100px);">
+                <img src="https://i.imgur.com/LBk6ESa.png" width="300px" height="auto">
+            </div>
+
+
+
+            <!-- <div class="col-12 col-md-6 col-lg-4 col-xxl-3 col-node my-3" did="{{deviceId}}">
+                <div class="card node-card">
+                    <div class="card-header d-flex align-items-center fs-4">
+                        <span>{name}</span>
+                        <span class="text-muted fs-6 ms-2">{deviceId}</span>
+                        <div class="ms-auto pointer" data-bs-toggle="dropdown">
+                            <i class="fas fa-ellipsis-v"></i>
+                        </div>
+                        <div class="dropdown-menu">
+                            <a class="dropdown-item" href="#" action="deviceDetail">
+                                <i class="fal fa-info-circle me-2"></i>
+                                <span>Detail</span>
+                            </a>
+                            <a class="dropdown-item" href="#" action="syncProps">
+                                <i class="fal fa-cloud-download me-2"></i>
+                                <span>Sync</span>
+                            </a>
+                            <a class="dropdown-item" href="#" action="restartDevice">
+                                <i class="fal fa-sync me-2"></i>
+                                <span>Restart</span>
+                            </a>
+                            <a class="dropdown-item text-danger" href="#" action="unpairDevice">
+                                <i class="far fa-unlink me-2"></i>
+                                <span>Unpair</span>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="card-body-container">
+                        <div class="card-body fs-5">
+                            <div class="d-flex align-items-center mb-3">
+                                <span>{{propBool}} <span class="text-muted">{{propId}}</span></span>
+                                <div class="ms-auto form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" prop="{{propBoolId1}}"
+                                        action="setProp">
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center mb-3">
+                                <span>{{propBool}} <span class="text-muted">{{propId}}</span></span>
+                                <div class="ms-auto form-check form-switch">
+                                    <input class="form-check-input" type="checkbox" role="switch" prop="{{propBoolId2}}"
+                                        action="setProp">
+                                </div>
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <span>{{propNumber}} <span class="text-muted">{{propId}}</span></span>
+                                <input class="ms-auto form-control text-end" type="text" pattern="\d*"
+                                    prop="{{propNumberlId}}" action="setProp">
+                            </div>
+                            <div class="d-flex align-items-center mb-3">
+                                <span>{{propString}} <span class="text-muted">{{propId}}</span></span>
+                                <input class="ms-auto form-control text-end" type="text" prop="{{propStringId}}"
+                                    action="setProp">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="card-footer text-center">
+                        <i class="text-danger opacity-50 fad fa-circle"></i>
+                        <span class="ms-1 text-muted">offline</span>
+                    </div>
+                </div>
+            </div> -->
+
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-YvpcrYf0tY3lHB60NNkmXc5s9fDVZLESaAA55NDzOxhy9GkcIdslK1eN7N6jIeHz"
+        crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.7/dist/notiflix-aio-3.2.7.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/circular-progress-bar@2.1.0/public/circular-progress-bar.min.js"></script>
+    <script src="./utils.js"></script>
+
+    <script>
+        let baseURI = ""
+        baseURI = "http://192.168.0.88"
+
+        var Devices = [
+            // {
+            //     "did": "5922554",
+            //     "mac": "40:91:51:5a:5e:fa",
+            //     "id": "5922554",
+            //     "name": "Node1",
+            //     "type": "ESP8266",
+            //     "model": "security-board",
+            //     "fw_ver": "1",
+            //     "support": "get_props,get_prop,set_prop",
+            //     "props_name": "led",
+            //     "led": "false"
+            // }
+        ]
+    </script>
+
+    <!-- Node Card -->
+    <script>
+        class NodeCard {
+
+            static instances = []
+
+            static getInstance(id) {
+                return NodeCard.instances.find(i => i.data.did === id)
+            }
+
+            static parseEvent(data) {
+                const [event, did, prop, value] = data.split('_')
+                const node = NodeCard.getInstance(did)
+                if (!node) return
+                switch (event) {
+                    case 'PROPCHANGED':
+                        node.updateProp(prop, value)
+                        break
+                    case 'ONLINE':
+                        node.markOnline(true)
+                        break
+                    case 'OFFLINE':
+                        node.markOnline(false)
+                        break
+                }
+            }
+
+            constructor(data) {
+                if (!data) return
+                if (NodeCard.getInstance(data.did))
+                    throw new Error(`NodeCard [${data.did}] already exists`)
+                NodeCard.instances.push(this)
+                this.data = data
+                this.el = null
+                this.isOnline = this.data.online === 'true'
+                this.init()
+                this.markOnline(this.isOnline)
+            }
+
+            init() {
+                {
+                    const { name, did, id, props_name } = this.data
+                    const props = props_name.split(',').map(p => ({ id: p, ...this.parseProp(this.data[p]) }))
+
+                    const nodeHtml = document.createElement('div')
+                    nodeHtml.className = 'col-12 col-md-6 col-lg-4 col-xxl-3 col-node my-3'
+                    nodeHtml.setAttribute('did', did)
+                    nodeHtml.innerHTML = `<div class="card node-card">
+                        <div class="card-header d-flex align-items-center fs-4 mb-3">
+                            <span>${name}</span>
+                            <span class="text-muted fs-6 ms-2">${id}</span>
+                            <div class="ms-auto pointer" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
+                            <div class="dropdown-menu">
+                                <a class="dropdown-item" action="deviceDetail" href="#"><i class="fal fa-info-circle me-2"></i><span>Detail</span></a>
+                                <a class="dropdown-item" action="syncProps" href="#"><i class="fal fa-cloud-download me-2"></i><span>Sync</span></a>
+                                <a class="dropdown-item" action="restartDevice" href="#"><i class="fal fa-sync me-2"></i><span>Restart</span></a>
+                                <a class="dropdown-item text-danger" action="unpairDevice" href="#"><i class="far fa-unlink me-2"></i><span>Unpair</span></a>
+                            </div>
+                        </div>
+                        <div class="card-body-container">
+                            <div class="card-body fs-5">${props.map(this.propHTML).join('')}</div>
+                        </div>
+                        <div class="card-footer text-center">
+                            <i class="text-danger opacity-50 fad fa-circle"></i>
+                            <span class="ms-1 text-muted">offline</span>
+                        </div>
+                    </div>`
+                    $main.appendChild(nodeHtml)
+                    this.el = nodeHtml
+                }
+            }
+
+            parseProp(pval) {
+                let val = ''
+                let type = ''
+                const i = pval.indexOf(',')
+                if (i > -1) {
+                    val = pval.substring(0, i)
+                    const jstr = pval.substring(i + 1)
+                    let json = null
+                    try { json = JSON.parse(jstr) } catch (error) { }
+                    if (json) return { v: val, ...json }
+                    return { v: pval, type: 'string' }
+                }
+                if (pval === 'true' || pval === 'false') type = 'bool'
+                else if (!isNaN(pval)) type = 'number'
+                else type = 'string'
+                return { v: pval, type }
+            }
+            propHTML(prop) {
+                const pname = () => `<span>${prop.name || prop.id}${prop.name ? (" <span class=\"text-muted\">" + prop.id + "</span>") : ""}</span>`
+                const pbool = () => `<div class="ms-auto form-check form-switch"><input class="form-check-input" type="checkbox" role="switch" action="setProp" prop="${prop.id}" ${prop.v === 'true' ? "checked" : ""}></div>`
+                const pinput = () => `<input class="ms-auto form-control text-end" type="text" action="setProp" prop="${prop.id}" value="${prop.v}" ${prop.type == 'number' ? 'pattern="\d*"' : ''}>`
+                let html = '<div class="d-flex align-items-center mb-3">' + pname()
+                switch (prop.type) {
+                    case 'bool': html += pbool(); break;
+                    case 'number': case 'string': html += pinput(); break;
+                }
+                html += '</div>'
+                return html
+            }
+
+            markOnline(online = true) {
+                this.isOnline = online
+                if (online) {
+                    this.el.querySelector('.node-card').classList.remove('offline')
+                    this.el.querySelector('[action="syncProps"]').classList.remove('disabled')
+                    this.el.querySelector('[action="restartDevice"]').classList.remove('disabled')
+                } else {
+                    this.el.querySelector('.node-card').classList.add('offline')
+                    this.el.querySelector('[action="syncProps"]').classList.add('disabled')
+                    this.el.querySelector('[action="restartDevice"]').classList.add('disabled')
+                }
+            }
+
+            updateProp(name, value) {
+                const prop = this.el.querySelector(`[prop="${name}"]`)
+                if (!prop) return
+                if (prop.type === 'checkbox') {
+                    prop.checked = value === 'true'
+                } else {
+                    prop.value = value
+                }
+                this.data[name] = value
+            }
+
+            revertProp(name) {
+                const prop = this.el.querySelector(`[prop="${name}"]`)
+                if (!prop) return
+                if (prop.type === 'checkbox') {
+                    prop.checked = this.data[name] === 'true'
+                } else {
+                    prop.value = this.data[name]
+                }
+            }
+
+            setProp(prop, value) {
+                const { did } = this.data
+                GET(baseURI + '/command?' + json2query({ id: did, action: 'set_prop', params: `${prop},${value}` }))
+                    .then(data => {
+                        console.log(data)
+                        if (data.success === true) {
+                            notify('success', `[${did}/${prop}] changed to [${value}]`)
+                            return
+                        }
+                        notify('failure', `Change [${did}/${prop}] failed: ${data.message}`)
+                        this.revertProp(prop)
+                    })
+                    .catch(error => {
+                        notify('failure', `Change [${did}/${prop}] failed: ${error.message}`)
+                        this.revertProp(prop)
+                    })
+            }
+
+            showDetail() {
+                document.querySelector('#detailModal tbody').innerHTML = ''
+                let html = Object.keys(this.data).map(key => `<tr><td>${key}</td><td>${this.data[key]}</td></tr>`).join('')
+                document.querySelector('#detailModal tbody').innerHTML = html
+                new bootstrap.Modal(document.getElementById('detailModal')).show()
+            }
+        }
+
+
+        const setProp = (did, prop, value)  => {
+            NodeCard.getInstance(did)?.setProp(prop, value)
+        }
+    </script>
+
+    <!-- Pairing -->
+    <script>
+        const Pairing = {
+            $stopBtn: document.querySelector('#pairModal button[action="stopPairing"]'),
+            progress: null,
+            setRemaining: (remaining, timeout) => {
+                let percent = Math.round(remaining / timeout * 100)
+                Pairing.progress.value = percent
+                document.querySelector('#pairModal .circular-progress-bar_value_text').innerHTML = `${Math.floor(remaining)}s`
+            },
+            show: (remaining, timeout) => {
+                if (Pairing.progress) {
+                    Pairing.setRemaining(remaining, timeout)
+                    return
+                }
+                new bootstrap.Modal('#pairModal').show()
+                Pairing.progress = new CircularProgressBar(100, { size: 250, background: "transparent", showValue: false })
+                Pairing.progress.appendTo(document.querySelector('#pairModal .progress'))
+                Pairing.setRemaining(remaining, timeout)
+                Pairing.$stopBtn.classList.remove('d-none')
+                let interval1 = setInterval(() => {
+                    if (remaining < 0 || !Pairing.progress) clearInterval(interval1)
+                    remaining -= 0.05
+                    Pairing.setRemaining(remaining, timeout)
+                }, 50)
+            },
+            hide: () => {
+                Loading.remove()
+                document.querySelector('#pairModal .progress').innerHTML = ''
+                bootstrap.Modal.getInstance('#pairModal')?.hide()
+                Pairing.$stopBtn.classList.add('d-none')
+                Pairing.progress = null
+            },
+            start: () => {
+                Loading.circle()
+                GET(baseURI + '/pair?start')
+                    .then(data => {
+                        Loading.remove()
+                        if (data.success) {
+                            Pairing.show(data.remaining, data.timeout)
+                        } else {
+                            notify('failure', data.message)
+                        }
+                    })
+                    .catch(error => {
+                        Loading.remove()
+                        notify('failure', error.message)
+                    })
+            },
+            stop: () => {
+                Loading.circle()
+                GET(baseURI + '/pair?stop')
+                    .then(data => {
+                        if (data.success) {
+                            Pairing.hide()
+                        } else {
+                            notify('failure', data.message)
+                        }
+                    })
+                    .catch(error => {
+                        notify('failure', error.message)
+                    })
+            }
+        }
+    </script>
+
+    <!-- Init listener -->
+    <script>
+        document.body.addEventListener('click', (e) => {
+            const el = e.target
+            let action = el.getAttribute('action')
+            if (!action) action = el.closest('.dropdown-item')?.getAttribute('action')
+            if (action) {
+                const did = el.closest('.col-node')?.getAttribute('did')
+                const prop = el.getAttribute('prop') || ''
+                switch (action) {
+                    case 'deviceDetail':
+                        NodeCard.getInstance(did)?.showDetail()
+                        break
+                    case 'syncProps':
+                        GET(baseURI + "/sync?id=" + did)
+                            .then(data => {
+                                if (data.success) {
+                                    notify('success', `Syncing [${did}]`)
+                                } else {
+                                    notify('failure', `Sync [${did}] failure: ${data.message}`)
+                                }
+                            })
+                            .catch(error => {
+                                notify('failure', `Sync [${did}] failure: ${error.message}`)
+                            })
+                        break
+                    case 'restartDevice':
+                        GET(baseURI + "/restart?id=" + did)
+                            .then(data => {
+                                if (data.success) {
+                                    notify('success', `Restarting [${did}]`)
+                                } else {
+                                    notify('failure', `Restart [${did}] failure: ${data.message}`)
+                                }
+                            })
+                            .catch(error => {
+                                notify('failure', `Restart [${did}] failure: ${error.message}`)
+                            })
+                        break
+                    case 'unpairDevice':
+                        Confirm.show('Unpair device', `Are you sure to unpair device [${did}]?`, 'Yes', 'No', () => {
+                            GET(baseURI + "/unpair?id=" + did)
+                                .then(data => {
+                                    if (data.success) {
+                                        notify('success', `Unpairing [${did}]`)
+                                        setTimeout(() => location.reload(), 1500)
+                                    } else {
+                                        notify('failure', `Unpair [${did}] failure: ${data.message}`)
+                                    }
+                                })
+                                .catch(error => {
+                                    notify('failure', `Unpair [${did}] failure: ${error.message}`)
+                                })
+                        })
+                        break
+                    case 'startPairing':
+                        Pairing.start()
+                        break
+                    case 'stopPairing':
+                        Pairing.stop()
+                        break
+                    case 'setProp':
+                        if (el.tagName === 'INPUT' && el.type === "text") break;
+                        // notify('info', `Change [${did}/${prop}] to [${el.checked}]`)
+                        setProp(did, prop, el.checked)
+                        break
+                }
+            }
+        })
+        document.body.addEventListener('input', (e) => {
+            const el = e.target
+            if (el.tagName === 'INPUT') {
+                if (el.type == 'checkbox') {
+                    el.setAttribute('last-value', el.checked)
+                } else {
+                    el.setAttribute('last-value', el.value)
+                }
+            }
+        })
+        document.body.addEventListener('change', (e) => {
+            const el = e.target
+            if (el.tagName === 'INPUT' && el.type === "text" && el.getAttribute('action') === 'setProp') {
+                const did = el.closest('.col-node')?.getAttribute('did')
+                const prop = el.getAttribute('prop')
+                el.blur()
+                // notify('info', `Change [${did}/${prop}] to [${el.value}]`)
+                setProp(did, prop, el.value)
+            }
+        })
+
+        var ws = new WebSocket(baseURI + "/ws");
+        ws.onopen = (e) => console.log("WebSocket is open now.")
+        ws.onclose = (e) => console.log("WebSocket is closed now.")
+        ws.onerror = (e) => console.log("WebSocket error observed:", e)
+        ws.onmessage = (e) => {
+            const data = e.data
+            console.log(data)
+            if (data.startsWith("PAIRING_REMAINING_")) {
+                const [, , remaining, timeout] = data.split('_')
+                Pairing.show(remaining, timeout)
+            } else if (data.startsWith("PAIRING_END")) {
+                Pairing.hide()
+            } else if (data.startsWith("PAIRING_SUCCESS")) {
+                notify('success', 'Pairing success')
+                setTimeout(() => location.reload(), 1500)
+            } else if (data.startsWith("PAIRING_FAILURE")) {
+                notify('failure', 'Pairing failure')
+            } else if (data.startsWith("PAIRING_TIMEOUT")) {
+                notify('failure', 'Pairing timeout')
+            } else {
+                NodeCard.parseEvent(data)
+            }
+        }
+    </script>
+
+    <script>
+        Loading.circle()
+        POST(baseURI + '/devices')
+            .then(data => {
+                Loading.remove()
+                console.log(data)
+                Devices = data
+                Devices.forEach(d => new NodeCard(d))
+                if (!data.length) emptyNode()
+            })
+            .catch(error => {
+                Loading.remove()
+                alertReload("Error fetch devices", error.message)
+                emptyNode()
+            })
+
+        // setTimeout(() => {
+        //     Loading.remove()
+        //     Devices.forEach(d => new NodeCard(d))
+        // }, 500)
+    </script>
+
+</body>
+
+</html>
