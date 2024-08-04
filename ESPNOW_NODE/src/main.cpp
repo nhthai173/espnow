@@ -141,7 +141,9 @@ void setup() {
                 else if (value == "toggle") {
                     bool newState = !digitalRead(LED_BUILTIN);
                     digitalWrite(LED_BUILTIN, newState);
-                    Node.sendSyncProp("led", newState == LOW ? "true" : "false");
+                    schedule_function([newState](){
+                        Node.sendSyncProp("led", newState == LOW ? "true" : "false");
+                    });
                 } else
                     return false;
                 return true;
