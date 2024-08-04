@@ -68,7 +68,7 @@ private:
     String dir = "/automations/";
     std::vector<automation_t> automations{};
 
-    automation_t *lastAT = nullptr;
+    std::vector<automation_t> _atMatches{};
 
     bool _isExist(uint16_t id) {
         File f = LittleFS.open(dir + String(id), "r");
@@ -254,6 +254,7 @@ public:
             return false;
         }
         automation_t a = _parseAutomation(f);
+        f.close();
         if (!a.id || !a.name || a.conditions.empty() || a.actions.empty()) {
             AT_Print("[Error][Automation][addRaw] invalid automation\n");
             remove(a.id);
@@ -355,8 +356,10 @@ public:
 
             automation_t a = _parseAutomation(f);
             f.close();
-            if (a.id && a.name) {
+            if (a.id && a.name && !a.conditions.empty() && !a.actions.empty()) {
                 automations.push_back(a);
+            } else {
+                removeFile(a.id);
             }
         }
     }
@@ -410,15 +413,31 @@ public:
         }
     }
 
-    automation_t *match(const String &did, const String &prop, const String &value) {
+    /**
+     * @brief Get all automations that has condition matches the given value (any of conditions matches and automation is enabled).
+     * 
+     * To get the automation, use getMatch(index). index start from 0.
+     * 
+     * @param did device ID
+     * @param prop property name
+     * @param value property value
+     * @return uint8_t number of automations that matches
+     */
+    uint8_t matches(const String &did, const String &prop, const String &value) {
+        _atMatches.clear();
         for (auto &at: automations) {
+            if (!at.enabled) continue;
             for (auto &con : at.conditions) {
                 if (con.type == CONDITION_TYPE_VALUE && con.first == did && con.second == prop && con.third == value) {
-                    return &at;
+                    _atMatches.push_back(at);
                 }
             }
         }
-        return nullptr;
+        return _atMatches.size();
+    }
+
+    automation_t &getMatch(uint8_t index) {
+        return _atMatches[index];
     }
 
 };

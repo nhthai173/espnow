@@ -14,6 +14,8 @@ AsyncWebSocket ws("/ws");
 
 Ticker ticker;
 
+String reqBodyBuffer;
+
 
 void setup() {
     // IO
@@ -105,11 +107,56 @@ void setup() {
         sep.forEach([id, data](const String &prop){
             String value = data->getParam(prop);
             ws.textAll("PROPCHANGED_" + id + "_" + prop + "_" + value);
-            automation_t *at = Automations.match(id, prop, value);
-            if (at != nullptr) {
-                for(auto &act : at->actions) {
-                    if (act.type == ACTION_TYPE_VALUE) {
-                        Gateway.sendCommand(id, "set_prop", act.second + "," + act.third, nullptr);
+            
+            // Get automations match with this device and property
+            uint8_t matchesCnt = Automations.matches(id, prop, value);
+            for (uint8_t i = 0; i < matchesCnt; i++) {
+                automation_t at = Automations.getMatch(i);
+                Serial.printf("==> Executing AT[%d]: %s\n", at.id, at.name.c_str());
+                
+                bool execute = false; // can execute this automation
+                if (at.conditions.size() > 1) {
+                    // Have multiple conditions
+                    uint8_t matchCnt = 0;
+                    for(auto &cond : at.conditions) {
+                        // Currently only execute CONDITION_TYPE_VALUE
+                        if (cond.type != CONDITION_TYPE_VALUE) continue;
+                        String did = cond.first;
+                        String prop = cond.second;
+                        String value = cond.third;
+                        if (did == id) {
+                            // condition from this device
+                            if (data->getParam(prop) == value) {
+                                matchCnt++;
+                                if (at.match == CONDITION_MATCH_ANY) {
+                                    execute = true;
+                                    break;
+                                }
+                            }
+                        } else {
+                            // condition from other device
+                            ENNodeDevice device(did);
+                            if (!device.isValid()) continue;
+                            if (device.getProp(prop) == value) {
+                                matchCnt++;
+                                if (at.match == CONDITION_MATCH_ANY) {
+                                    execute = true;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                    execute = execute || matchCnt == at.conditions.size();
+                } else {
+                    // Only 1 condition
+                    execute = true;
+                }
+                if (execute) {
+                    for(auto &act : at.actions) {
+                        // Currently only execute ACTION_TYPE_VALUE
+                        if (act.type == ACTION_TYPE_VALUE) {
+                            Gateway.sendCommand(act.first, "set_prop", act.second + "," + act.third, nullptr);
+                        }
                     }
                 }
             }
@@ -274,21 +321,30 @@ void setup() {
 
     sv.onRequestBody([](AsyncWebServerRequest *req, uint8_t *data, size_t len, size_t index, size_t total) {
         if (req->url() == "/auto/add-update") {
-            Serial.printf("Body: %s\n", (char *)data);
-            AsyncWebServerResponse *res;
-            uint16_t id = 0;
-            String body = (char *)data;
-            if (req->hasArg("id")) {
-                id = req->arg("id").toInt();
+            
+            if (index == 0) {
+                Serial.printf("====== POST Body: %d bytes ======\n", total);
+                reqBodyBuffer = "";
             }
-            id = Automations.addUpdate(body, id);
-            if (id > 0) {
-                res = req->beginResponse(200, "text/plain", R"({"success":true,"id":)" + String(id) + "}");
-            } else {
-                res = req->beginResponse(400, "text/plain", R"({"success":false,"message":"invalid automation"})");
+            reqBodyBuffer += (char *)data;
+            if (index + len == total) {
+                Serial.printf("%s\n", reqBodyBuffer.c_str());
+                Serial.printf("==================================\n");
+                
+                AsyncWebServerResponse *res;
+                uint16_t id = 0;
+                if (req->hasArg("id")) {
+                    id = req->arg("id").toInt();
+                }
+                id = Automations.addUpdate(reqBodyBuffer, id);
+                if (id > 0) {
+                    res = req->beginResponse(200, "text/plain", R"({"success":true,"id":)" + String(id) + "}");
+                } else {
+                    res = req->beginResponse(400, "text/plain", R"({"success":false,"message":"invalid automation"})");
+                }
+                res->addHeader("Access-Control-Allow-Origin", "*");
+                req->send(res);
             }
-            res->addHeader("Access-Control-Allow-Origin", "*");
-            req->send(res);
         }
     });
 
