@@ -42,3 +42,57 @@ const alertReload = (title = "Error", message = "") => {
 const json2query = (json) => {
     return Object.keys(json).map(key => enurl(key) + '=' + enurl(json[key])).join('&')
 }
+
+const isPlainObject = (obj) => {
+    if (obj === null || typeof obj !== 'object' || Array.isArray(obj)) {
+      return false;
+    }
+    let proto = Object.getPrototypeOf(obj);
+    while (proto) {
+      if (proto === Object.prototype) {
+        return true;
+      }
+      proto = Object.getPrototypeOf(proto);
+    }
+    return false;
+  }
+  
+
+const duplicateObject = (obj) => {
+    let nObj = {}
+    for (let key in obj) {
+        if (typeof obj[key] == 'function')
+            continue
+        if (typeof obj[key] === 'object' && isPlainObject(obj[key])) {
+            nObj[key] = duplicateObject(obj[key])
+        } else {
+            nObj[key] = obj[key]
+        }
+    }
+    return nObj
+}
+
+
+
+
+
+let baseURI = ""
+baseURI = "http://192.168.0.88"
+
+
+
+const GetDevices = async () => {
+    Loading.circle()
+    return POST(baseURI + '/devices')
+    .then(data => {
+        Loading.remove()
+        console.log(data)
+        return data
+    })
+    .catch(error => {
+        Loading.remove()
+        alertReload("Error fetch devices", error.message)
+        emptyNode()
+        return null
+    })
+}

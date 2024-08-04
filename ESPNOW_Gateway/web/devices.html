@@ -128,7 +128,8 @@
 
             <div class="col-12 col-node-empty d-flex justify-content-center align-items-center d-none"
                 style="height: calc(100vh - 100px);">
-                <img src="https://i.imgur.com/LBk6ESa.png" width="300px" height="auto">
+                <!-- <img src="https://i.imgur.com/LBk6ESa.png" width="300px" height="auto"> -->
+                <img src="./empty-data.png" width="300px" height="auto" alt="">
             </div>
 
 
@@ -205,26 +206,6 @@
     <script src="https://cdn.jsdelivr.net/npm/circular-progress-bar@2.1.0/public/circular-progress-bar.min.js"></script>
     <script src="./utils.js"></script>
 
-    <script>
-        let baseURI = ""
-        baseURI = "http://192.168.0.88"
-
-        var Devices = [
-            // {
-            //     "did": "5922554",
-            //     "mac": "40:91:51:5a:5e:fa",
-            //     "id": "5922554",
-            //     "name": "Node1",
-            //     "type": "ESP8266",
-            //     "model": "security-board",
-            //     "fw_ver": "1",
-            //     "support": "get_props,get_prop,set_prop",
-            //     "props_name": "led",
-            //     "led": "false"
-            // }
-        ]
-    </script>
-
     <!-- Node Card -->
     <script>
         class NodeCard {
@@ -267,7 +248,7 @@
             init() {
                 {
                     const { name, did, id, props_name } = this.data
-                    const props = props_name.split(',').map(p => ({ id: p, ...this.parseProp(this.data[p]) }))
+                    const props = props_name?.split(',').map(p => ({ id: p, ...this.parseProp(this.data[p]) }))
 
                     const nodeHtml = document.createElement('div')
                     nodeHtml.className = 'col-12 col-md-6 col-lg-4 col-xxl-3 col-node my-3'
@@ -276,7 +257,7 @@
                         <div class="card-header d-flex align-items-center fs-4 mb-3">
                             <span>${name}</span>
                             <span class="text-muted fs-6 ms-2">${id}</span>
-                            <div class="ms-auto pointer" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
+                            <div class="ms-auto pointer ps-4 pe-2" data-bs-toggle="dropdown"><i class="fas fa-ellipsis-v"></i></div>
                             <div class="dropdown-menu">
                                 <a class="dropdown-item" action="deviceDetail" href="#"><i class="fal fa-info-circle me-2"></i><span>Detail</span></a>
                                 <a class="dropdown-item" action="syncProps" href="#"><i class="fal fa-cloud-download me-2"></i><span>Sync</span></a>
@@ -285,7 +266,7 @@
                             </div>
                         </div>
                         <div class="card-body-container">
-                            <div class="card-body fs-5">${props.map(this.propHTML).join('')}</div>
+                            <div class="card-body fs-5">${props?.map(this.propHTML).join('')}</div>
                         </div>
                         <div class="card-footer text-center">
                             <i class="text-danger opacity-50 fad fa-circle"></i>
@@ -575,25 +556,26 @@
     </script>
 
     <script>
-        Loading.circle()
-        POST(baseURI + '/devices')
-            .then(data => {
-                Loading.remove()
-                console.log(data)
-                Devices = data
-                Devices.forEach(d => new NodeCard(d))
-                if (!data.length) emptyNode()
-            })
-            .catch(error => {
-                Loading.remove()
-                alertReload("Error fetch devices", error.message)
-                emptyNode()
-            })
+        var Devices = [
+            // {
+            //     "did": "5922554",
+            //     "mac": "40:91:51:5a:5e:fa",
+            //     "id": "5922554",
+            //     "name": "Node1",
+            //     "type": "ESP8266",
+            //     "model": "security-board",
+            //     "fw_ver": "1",
+            //     "support": "get_props,get_prop,set_prop",
+            //     "props_name": "led",
+            //     "led": "false"
+            // }
+        ]
 
-        // setTimeout(() => {
-        //     Loading.remove()
-        //     Devices.forEach(d => new NodeCard(d))
-        // }, 500)
+        GetDevices().then(data => {
+            Devices = data
+            Devices.forEach(d => new NodeCard(d))
+            if (!data.length) emptyNode()
+        })
     </script>
 
 </body>

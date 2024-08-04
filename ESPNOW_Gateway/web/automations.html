@@ -146,7 +146,7 @@
                     <button class="btn btn-outline-secondary">Add new automation</button>
                 </div>    
                 <div class="d-block d-md-none">
-                    <a href="#" class="text-white rounded-pill me-2" action="addAT"><i class="fs-4 fal fa-plus-circle"></i></a>
+                    <a href="#" class="text-body me-2" action="addAT"><i class="fs-4 fal fa-plus-circle"></i></a>
                 </div>
             </div>
         </div>
@@ -287,6 +287,12 @@
         <div class="row justify-content-center py-4 px-2">
             <div class="col py-5" id="main" style="width: 100%; max-width: 600px;">
 
+                <div class="col-12 col-at-empty d-flex justify-content-center align-items-center d-none"
+                    style="height: calc(100vh - 250px);">
+                    <!-- <img src="https://i.imgur.com/LBk6ESa.png" width="300px" height="auto"> -->
+                    <img src="./empty-data.png" width="300px" height="auto" alt="">
+                </div>
+
 
 
                 <!-- <div class="card card-at border-0 shadow rounded-4 mb-5" at-id="">
@@ -314,30 +320,21 @@
     <script src="https://cdn.jsdelivr.net/npm/circular-progress-bar@2.1.0/public/circular-progress-bar.min.js"></script>
     <script src="./utils.js"></script>
 
-
-
-    <script>
-
-        baseURI = ''
-    </script>
-
-
-
     <script>
         var Devices = [
-            {
-                "did": "5922554",
-                "mac": "40:91:51:5a:5e:fa",
-                "id": "5922554",
-                "name": "Node1",
-                "type": "ESP8266",
-                "model": "security-board",
-                "fw_ver": "1",
-                "support": "get_props,get_prop,set_prop",
-                "props_name": "led,button",
-                "led": "false",
-                "button": "idle"
-            }
+            // {
+            //     "did": "5922554",
+            //     "mac": "40:91:51:5a:5e:fa",
+            //     "id": "5922554",
+            //     "name": "Node1",
+            //     "type": "ESP8266",
+            //     "model": "security-board",
+            //     "fw_ver": "1",
+            //     "support": "get_props,get_prop,set_prop",
+            //     "props_name": "led,button",
+            //     "led": "false",
+            //     "button": "idle"
+            // }
         ]
 
         var Automations = [
@@ -661,7 +658,7 @@
                     this.$delBtn.style.display = 'none'
                     this.$title.textContent = 'Add new automation'
                 } else {
-                    this.oldData = JSON.parse(JSON.stringify(data)) || {}
+                    this.oldData = duplicateObject(data)
                     this.$delBtn.style.display = 'block'
                     this.$title.textContent = 'Edit automation'
                 }
@@ -821,11 +818,6 @@
 
 
         class Automation {
-
-            static load(rawData) {
-                let loadAT = []
-                //
-            }
 
             static instances = []
 
@@ -1040,7 +1032,6 @@
         }
 
 
-        baseURI = 'http://192.168.0.88'
         ATModal.init()
 
         document.querySelector('[action="addAT"]').addEventListener('click', () => {
@@ -1048,8 +1039,29 @@
             new ATEdit('add', at.data, at)
         })
 
+        var atEmptyChecker = setInterval(() => {
+            // Check automations empty or not
+            for (const at of Automation.instances) {
+                if (at.el && at.isValid()) {
+                    document.querySelector('.col-at-empty').classList.add('d-none')
+                    clearInterval(atEmptyChecker)
+                    return
+                }
+            }
+            document.querySelector('.col-at-empty').classList.remove('d-none')
+        }, 300)
+
+
+        GetDevices()
+            .then(data => {
+                Devices = data
+            })
+
+        Loading.circle()
+
         GET(baseURI + '/auto/get')
             .then(data => {
+                Loading.remove()
                 console.log(data)
                 if (!data || !Array.isArray(data) || !data.length) return
                 Automations = data
@@ -1057,19 +1069,24 @@
                         return at.triggers.length && at.triggers.every(t => t.type == '2') && at.actions.length && at.actions.every(a => a.type == '2')
                     })
                     .map(at => {
+                        at.matchType = at.match
                         for (const t of at.triggers) {
                             t.atType = t.type
-                            t.did = t.first
-                            t.dname = Devices.find(d => d.did == t.did)?.name || 'Unknown'
-                            t.prop = t.second
-                            t.value = t.third
+                            if (t.type == '2') {
+                                t.did = t.first
+                                t.dname = Devices.find(d => d.did == t.did)?.name || 'Unknown'
+                                t.prop = t.second
+                                t.value = t.third
+                            }
                         }
                         for (const a of at.actions) {
                             a.atType = a.type
-                            a.did = a.first
-                            a.dname = Devices.find(d => d.did == a.did)?.name || 'Unknown'
-                            a.prop = a.second
-                            a.value = a.third
+                            if (a.type == '2') {
+                                a.did = a.first
+                                a.dname = Devices.find(d => d.did == a.did)?.name || 'Unknown'
+                                a.prop = a.second
+                                a.value = a.third
+                            }
                         }
                         return at
                     })
@@ -1080,9 +1097,9 @@
                 })
             })
             .catch(err => {
+                Loading.remove()
                 notify('failure', `Failed to load automations: ${err.message}`)
             })
-
     </script>
 
 </body>
