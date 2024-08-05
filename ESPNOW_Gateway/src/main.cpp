@@ -165,11 +165,11 @@ void setup() {
 
 //    addPeer(node_mac);
 
-    sv.on("/", [](AsyncWebServerRequest *req) {
+    sv.on("/", HTTP_GET, [](AsyncWebServerRequest *req) {
         req->send(200, "text/plain", "Hello World");
     });
 
-    sv.on("/device", [](AsyncWebServerRequest *req) {
+    sv.on("/device", HTTP_GET, [](AsyncWebServerRequest *req) {
         String id = req->arg("id");
         if (id == "") {
             req->send(400, "text/plain", "Bad Request. Missing id");
@@ -183,15 +183,15 @@ void setup() {
         req->send(200, "application/json", device.toJSON());
     });
 
-    sv.on("/devices", HTTP_POST, [](AsyncWebServerRequest *req){
+    sv.on("/devices", HTTP_GET, [](AsyncWebServerRequest *req){
         AsyncWebServerResponse *res = req->beginResponse(200, "application/json", Gateway.getDevicesJSON());
         res->addHeader("Access-Control-Allow-Origin", "*");
         req->send(res);
     });
 
-    sv.on("/devices", HTTP_GET, [](AsyncWebServerRequest *req){
-        req->send(LittleFS, "/devices.html", "text/html", false);
-    });
+    // sv.on("/devices", HTTP_GET, [](AsyncWebServerRequest *req){
+    //     req->send(LittleFS, "/devices.html", "text/html", false);
+    // });
 
     sv.on("/pair", [](AsyncWebServerRequest *req) {
         AsyncWebServerResponse *res;
@@ -276,13 +276,13 @@ void setup() {
             disable = true;
         }
         if (id == 0) {
-            res = req->beginResponse(400, "text/plain", R"({"success":false,"message":"missing id"})");
+            res = req->beginResponse(400, "application/json", R"({"success":false,"message":"missing id"})");
             return;
         }
         if (Automations.enable(id, !disable)) {
-            res = req->beginResponse(200, "text/plain", R"({"success":true})");
+            res = req->beginResponse(200, "application/json", R"({"success":true})");
         } else {
-            res = req->beginResponse(400, "text/plain", R"({"success":false,"message":"automation not found"})");
+            res = req->beginResponse(400, "application/json", R"({"success":false,"message":"automation not found"})");
         }
         res->addHeader("Access-Control-Allow-Origin", "*");
         req->send(res);
@@ -292,13 +292,13 @@ void setup() {
         AsyncWebServerResponse *res;
         uint16_t id = req->arg("id").toInt();
         if (id == 0) {
-            res = req->beginResponse(400, "text/plain", R"({"success":false,"message":"missing id"})");
+            res = req->beginResponse(400, "application/json", R"({"success":false,"message":"missing id"})");
             return;
         }
         if (Automations.remove(id)) {
-            res = req->beginResponse(200, "text/plain", R"({"success":true})");
+            res = req->beginResponse(200, "application/json", R"({"success":true})");
         } else {
-            res = req->beginResponse(400, "text/plain", R"({"success":false,"message":"automation not found"})");
+            res = req->beginResponse(400, "application/json", R"({"success":false,"message":"automation not found"})");
         }
         res->addHeader("Access-Control-Allow-Origin", "*");
         req->send(res);
@@ -338,9 +338,9 @@ void setup() {
                 }
                 id = Automations.addUpdate(reqBodyBuffer, id);
                 if (id > 0) {
-                    res = req->beginResponse(200, "text/plain", R"({"success":true,"id":)" + String(id) + "}");
+                    res = req->beginResponse(200, "application/json", R"({"success":true,"id":)" + String(id) + "}");
                 } else {
-                    res = req->beginResponse(400, "text/plain", R"({"success":false,"message":"invalid automation"})");
+                    res = req->beginResponse(400, "application/json", R"({"success":false,"message":"invalid automation"})");
                 }
                 res->addHeader("Access-Control-Allow-Origin", "*");
                 req->send(res);
