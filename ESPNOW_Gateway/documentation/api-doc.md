@@ -17,11 +17,11 @@ All endpoints are relative to the base URL: `http://<ESP_IP_ADDRESS>`
 - [POST /command](#post-command)
 - [POST /restart](#post-restart)
 - [POST /sync](#post-sync)
-- [POST /auto/enable](#post-auto-enable)
-- [POST /auto/remove](#post-auto-remove)
-- [POST /auto/remove-all](#post-auto-remove-all)
-- [GET /auto/get](#get-auto-get)
-- [POST /auto/add-update](#post-auto-add-update)
+- [POST /auto/enable](#post-autoenable)
+- [POST /auto/remove](#post-autoremove)
+- [POST /auto/remove-all](#post-autoremove-all)
+- [GET /auto/get](#get-autoget)
+- [POST /auto/add-update](#post-autoadd-update)
 - [Not Found](#not-found)
 
 ---
