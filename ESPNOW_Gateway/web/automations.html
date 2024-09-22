@@ -104,9 +104,6 @@
         .at-item.at-new .index {
             color: rgb(var(--bs-primary-rgb));
         }
-
-
-        
     </style>
 </head>
 
@@ -144,7 +141,7 @@
             <div action="addAT">
                 <div class="d-none d-md-block">
                     <button class="btn btn-outline-secondary">Add new automation</button>
-                </div>    
+                </div>
                 <div class="d-block d-md-none">
                     <a href="#" class="text-body me-2" action="addAT"><i class="fs-4 fal fa-plus-circle"></i></a>
                 </div>
@@ -211,7 +208,7 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-center mt-5 mb-3">
+                    <div class="d-flex-center mt-5 mb-3">
                         <button class="btn btn-lg btn-outline-danger rounded-pill w-100" action="atDelete">
                             Delete automation
                         </button>
@@ -271,9 +268,125 @@
                         </div>
                     </div>
 
-                    <div class="d-flex justify-content-center mt-5 mb-3">
+                    <div class="d-flex-center mt-5 mb-3">
                         <button class="btn btn-lg btn-outline-danger rounded-pill w-100"
                             action="atDelete">Delete</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+    <div class="modal fade" id="atEditPeriodModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-md-down">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button class="btn btn-icon fs-4" action="atDiscard">
+                        <i class="fal fa-times" action="atDiscard"></i>
+                    </button>
+                    <button class="ms-auto btn btn-icon fs-4" action="atSave">
+                        <i class="fal fa-check" action="atSave"></i>
+                    </button>
+                </div>
+                <div class="modal-body" style="max-height: 80vh; overflow-y: auto;">
+                    <h3 role="title" class="at-title">Effective period</h3>
+
+                    <div class="card card-1">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-5">All day</span>
+                                <div class="ms-auto form-check form-check-lg">
+                                    <input class="form-check-input form-check-circle" type="checkbox" value="" id="defaultCheck1">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card card-1">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <span class="fs-5">Specific time period</span>
+                                <div class="ms-auto form-check form-check-lg">
+                                    <input class="form-check-input form-check-circle" type="checkbox" value="" id="defaultCheck1">
+                                </div>
+                            </div>
+                            <div class="collapse">
+                                <div class="d-flex fs-6 mt-3 align-items-center">
+                                    <span>
+                                        Start time
+                                    </span>
+                                    <input class="ms-auto form-control text-center" type="text" style="width: 70px;" value="12:12">
+                                </div>
+                                <div class="d-flex fs-6 mt-3 align-items-center">
+                                    <span>
+                                        End time
+                                    </span>
+                                    <input class="ms-auto form-control text-center" type="text" style="width: 70px;" value="12:12">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <hr>
+
+                    <div class="card card-1 mt-4">
+                        <div class="card-body">
+                            <div class="d-flex-center fs-5">
+                                <span>Repeat</span>
+                                <span class="ms-auto text-muted">
+                                    Everyday
+                                    <i class="ms-2 fal fa-chevron-right fs-6"></i>
+                                </span>
+                            </div>
+                            <div>
+                                <div class="d-flex-center fs-6 mt-3">
+                                    <span>Monday</span>
+                                    <div class="ms-auto form-check form-check-lg">
+                                        <input type="checkbox" class="form-check-input form-check-circle">
+                                    </div>
+                                </div>
+                                <div class="d-flex-center fs-6 mt-3">
+                                    <span>Tuesday</span>
+                                    <div class="ms-auto form-check form-check-lg">
+                                        <input type="checkbox" class="form-check-input form-check-circle">
+                                    </div>
+                                </div>
+                                <div class="d-flex-center fs-6 mt-3">
+                                    <span>Wednesday</span>
+                                    <div class="ms-auto form-check form-check-lg">
+                                        <input type="checkbox" class="form-check-input form-check-circle">
+                                    </div>
+                                </div>
+                                <div class="d-flex-center fs-6 mt-3">
+                                    <span>Thursday</span>
+                                    <div class="ms-auto form-check form-check-lg">
+                                        <input type="checkbox" class="form-check-input form-check-circle">
+                                    </div>
+                                </div>
+                                <div class="d-flex-center fs-6 mt-3">
+                                    <span>Friday</span>
+                                    <div class="ms-auto form-check form-check-lg">
+                                        <input type="checkbox" class="form-check-input form-check-circle">
+                                    </div>
+                                </div>
+                                <div class="d-flex-center fs-6 mt-3">
+                                    <span>Saturday</span>
+                                    <div class="ms-auto form-check form-check-lg">
+                                        <input type="checkbox" class="form-check-input form-check-circle">
+                                    </div>
+                                </div>
+                                <div class="d-flex-center fs-6 mt-3">
+                                    <span>Sunday</span>
+                                    <div class="ms-auto form-check form-check-lg">
+                                        <input type="checkbox" class="form-check-input form-check-circle">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
                 </div>
@@ -287,7 +400,7 @@
         <div class="row justify-content-center py-4 px-2">
             <div class="col py-5" id="main" style="width: 100%; max-width: 600px;">
 
-                <div class="col-12 col-at-empty d-flex justify-content-center align-items-center d-none"
+                <div class="col-12 col-at-empty d-flex-center align-items-center d-none"
                     style="height: calc(100vh - 250px);">
                     <!-- <img src="https://i.imgur.com/LBk6ESa.png" width="300px" height="auto"> -->
                     <img src="./empty-data.png" width="300px" height="auto" alt="">
@@ -319,22 +432,24 @@
     <script src="https://cdn.jsdelivr.net/npm/notiflix@3.2.7/dist/notiflix-aio-3.2.7.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/circular-progress-bar@2.1.0/public/circular-progress-bar.min.js"></script>
     <script src="./utils.js"></script>
+    <script src="./model/ATModal.js"></script>
+    <script src="./model/Automation.js"></script>
 
     <script>
         var Devices = [
-            // {
-            //     "did": "5922554",
-            //     "mac": "40:91:51:5a:5e:fa",
-            //     "id": "5922554",
-            //     "name": "Node1",
-            //     "type": "ESP8266",
-            //     "model": "security-board",
-            //     "fw_ver": "1",
-            //     "support": "get_props,get_prop,set_prop",
-            //     "props_name": "led,button",
-            //     "led": "false",
-            //     "button": "idle"
-            // }
+            {
+                "did": "5922554",
+                "mac": "40:91:51:5a:5e:fa",
+                "id": "5922554",
+                "name": "Node1",
+                "type": "ESP8266",
+                "model": "security-board",
+                "fw_ver": "1",
+                "support": "get_props,get_prop,set_prop",
+                "props_name": "led,button",
+                "led": "false",
+                "button": "idle"
+            }
         ]
 
         var Automations = [
@@ -364,672 +479,38 @@
             //         { type: '2', did: '5922554', dname: 'Node 1', prop: 'led', value: 'false' },
             //     ]
             // }
+            {
+                "id": 56567,
+                "enabled": true,
+                "name": "Toggle LED",
+                "match": 0,
+                "triggers": [
+                    {
+                        "type": 2,
+                        "first": "5922554",
+                        "second": "button",
+                        "third": "click"
+                    }
+                ],
+                "actions": [
+                    {
+                        "type": 2,
+                        "first": "6474413",
+                        "second": "r1",
+                        "third": "toggle"
+                    }
+                ]
+            }
         ]
 
 
 
-        class ATModal {
-            static currentModal = null
-
-            static init() {
-                document.body.addEventListener('click', (e) => {
-                    const el = e.target
-                    const action = el.getAttribute('action')
-                    switch (action) {
-                        case 'atDiscard':
-                            Confirm.show('Discard', 'Are you sure you want to discard changes?', 'Discard', 'Cancel', () => {
-                                ATModal.currentModal?.discard()
-                            })
-                            break
-                        case 'atSave':
-                            ATModal.currentModal?.save()
-                            break
-                        case 'atDelete':
-                            Confirm.show('Delete', 'Are you sure you want to delete this?', 'Delete', 'Cancel', () => {
-                                ATModal.currentModal?.delete()
-                            })
-                            break
-                    }
-                })
-
-                try {
-                    ATEdit.init()
-                    ATEditItem.init()
-                } catch (e) { }
-
-            }
-        }
-
-        class ATEditItem extends ATModal {
-
-            static init() {
-                document.querySelectorAll("#atEditItemModal [name]").forEach(el => {
-                    el.addEventListener('change', () => {
-                        const name = el.getAttribute('name')
-                        if (name === 'did') {
-                            ATModal.currentModal?._selectDevice(el.value)
-                            ATModal.currentModal?._intPropsSelect()
-                        }
-                    })
-                })
-            }
-
-            constructor(type, action, data) {
-                super()
-                ATModal.currentModal = this
-
-                this.modal = document.getElementById('atEditItemModal')
-                this.data = data
-                this.action = action
-                this.$devices = this.modal.querySelector('[name="did"]')
-                this.$props = this.modal.querySelector('[name="prop"]')
-                this.$value = this.modal.querySelector('[name="value"]')
-                this.$delBtn = this.modal.querySelector('[action="atDelete"]')
-
-                this.titleText = action.charAt(0).toUpperCase() + action.slice(1)
-                this.titleText += ` ${type}`
-                this.deleteText = `Delete ${type}`
-                this.modal.querySelector('[role="title"]').innerHTML = this.titleText
-                this.$delBtn.innerHTML = this.deleteText
-
-                this._selectDevice(this.data.did)
-                this.$devices.dispatchEvent(new Event('change'))
-                this._intPropsSelect()
-                this._propSelect(this.data.prop)
-                this.$value.value = this.data.value || ""
-
-                if (action === 'edit') {
-                    this.$devices.disabled = true
-                    this.$delBtn.style.display = 'block'
-                } else {
-                    this.$devices.disabled = false
-                    this.$delBtn.style.display = 'none'
-                }
-
-                // @TODO support all type
-                this.data.atType = '2'
-
-                new bootstrap.Modal(this.modal).show()
-            }
-
-            destroy() {
-                ATModal.currentModal = null
-                bootstrap.Modal.getInstance(this.modal)?.hide()
-                this.data.previousModal?.handleItemAction(this.data)
-            }
-
-            _initDevicesSelect() {
-                const { $devices } = this
-                $devices.innerHTML = ''
-                for (let device of Devices) {
-                    let option = document.createElement('option')
-                    option.value = device.did
-                    option.setAttribute('dname', device.name)
-                    option.innerHTML = `${device.name} (${device.did})`
-                    $devices.appendChild(option)
-                }
-            }
-            _selectDevice(did) {
-                const { $devices } = this
-                if (!did || did == 'null') {
-                    this._initDevicesSelect()
-                    // null option
-                    let nullOpt = document.createElement('option')
-                    nullOpt.value = 'null'
-                    nullOpt.innerHTML = 'Select a device'
-                    nullOpt.disabled = true
-                    nullOpt.selected = true
-                    $devices.setAttribute('dname', '')
-                    $devices.prepend(nullOpt)
-                    return
-                }
-                if (this.action === 'edit') {
-                    $devices.innerHTML = ''
-                    let device = Devices.find(device => device.did === did)
-                    if (!device) return
-                    let option = document.createElement('option')
-                    option.value = device.did
-                    option.innerHTML = `${device.name} (${device.did})`
-                    option.disabled = true
-                    option.selected = true
-                    $devices.appendChild(option)
-                    $devices.setAttribute('dname', device.name)
-                } else {
-                    $devices.value = did
-                    $devices.setAttribute('dname', $devices.querySelector(`option[value="${did}"]`)?.getAttribute('dname'))
-                }
-            }
-            _getDevice() {
-                return this.$devices?.value || this.$devices.querySelector('option[disabled]')?.value
-            }
-
-            _intPropsSelect() {
-                const { $props } = this
-                $props.innerHTML = ''
-                let did = this._getDevice()
-                if (!did || did == 'null') {
-                    let nullOpt = document.createElement('option')
-                    nullOpt.value = 'null'
-                    nullOpt.innerHTML = 'Select a device first'
-                    nullOpt.disabled = true
-                    nullOpt.selected = true
-                    $props.prepend(nullOpt)
-                    return
-                }
-
-                const device = Devices.find(device => device.did === did)
-                if (!device) return
-                device.props_name.split(',').forEach(prop => {
-                    let option = document.createElement('option')
-                    option.value = prop
-                    option.innerHTML = prop
-                    $props.appendChild(option)
-                })
-            }
-            _propSelect(prop) {
-                const did = this._getDevice()
-                if (!did || did == 'null') return
-
-                const { $props } = this
-                if (!prop) {
-                    let nullOpt = document.createElement('option')
-                    nullOpt.value = 'null'
-                    nullOpt.innerHTML = 'Select a property'
-                    nullOpt.disabled = true
-                    nullOpt.selected = true
-                    $props.prepend(nullOpt)
-                    return
-                }
-                $props.querySelectorAll('option').forEach(opt => opt.removeAttribute('selected'))
-                $props.querySelector(`[value="${prop}"]`)?.setAttribute('selected', '')
-            }
-            _getProp() {
-                return this.$props.querySelector('option[selected]')?.value
-            }
-
-            save() {
-                const ndata = {
-                    did: this.modal.querySelector('[name="did"]').value,
-                    dname: this.modal.querySelector('[name="did"]').getAttribute('dname'),
-                    prop: this.modal.querySelector('[name="prop"]').value,
-                    value: this.modal.querySelector('[name="value"]').value
-                }
-                for (const key in ndata) {
-                    if (ndata[key] === undefined || ndata[key] === null || ndata[key] === '') {
-                        Confirm.show('Please fill all fields', `"${key}" is empty`, 'OK')
-                        return
-                    }
-                }
-                Object.assign(this.data, ndata)
-                this.data.lastAction = 'save'
-                this.destroy()
-            }
-
-            delete() {
-                this.data.lastAction = 'delete'
-                this.destroy()
-            }
-
-            discard() {
-                this.data.lastAction = 'discard'
-                this.destroy()
-            }
-        }
 
 
-        class ATEdit extends ATModal {
-
-            static init() {
-                // match type select
-                let matchTypes = []
-                document.querySelectorAll("#atEditModal [name='atMatchType'] .select-option")?.forEach(el => {
-                    const opt = document.createElement('li')
-                    opt.className = 'dropdown-item pointer'
-                    opt.innerHTML = el.innerHTML
-                    opt.setAttribute('value', el.getAttribute('value'))
-                    matchTypes.push(opt)
-                })
-                if (matchTypes.length) {
-                    const el = document.querySelector("#atEditModal [name='atMatchType']")
-                    el.setAttribute('data-bs-toggle', 'dropdown')
-                    const menu = document.createElement('div')
-                    menu.className = 'dropdown-menu'
-                    matchTypes.forEach(opt => {
-                        menu.appendChild(opt)
-                        opt.addEventListener('click', () => {
-                            el.querySelectorAll('.select-option').forEach(opt => opt.removeAttribute('selected'))
-                            el.querySelector(`[value="${opt.getAttribute('value')}"]`).setAttribute('selected', '')
-                        })
-                    })
-                    el.parentNode.appendChild(menu)
-                }
-
-                // edit item
-                document.getElementById("atEditModal").addEventListener('click', (e) => {
-                    const el = e.target
-                    const item = el.closest('.at-item')
-                    if (!item) return
-                    const type = item.closest('.card')?.getAttribute('at-type')
-                    const action = item.classList.contains('at-new') ? 'add' : (item.classList.contains('at-edit') ? 'edit' : null)
-                    if (!type || !action) return
-                    const data = {
-                        previousModal: ATModal.currentModal,
-                        type,
-                        index: item.getAttribute('index') || '',
-                        dname: item.getAttribute('dname') || '',
-                        did: item.getAttribute('did') || '',
-                        prop: item.getAttribute('prop') || '',
-                        value: item.getAttribute('value') || ''
-                    }
-                    setTimeout(() => {
-                        new ATEditItem(type, action, data)
-                    }, 100);
-                    if (!isMobile) {
-                        ATModal.currentModal?.destroy()
-                    }
-                })
-
-            }
-
-            constructor(action, data, atObject = null) {
-                super()
-                ATModal.currentModal = this
-
-                this.modal = document.getElementById('atEditModal')
-                this.action = action
-                this.data = data || {}
-                this.atObject = atObject
-                this.$title = this.modal.querySelector('[role="title"]')
-                this.$delBtn = this.modal.querySelector('[action="atDelete"]')
-                this.$name = this.modal.querySelector('[name="atName"]')
-                this.$matchType = this.modal.querySelector('[name="atMatchType"]')
-                this.$triggers = this.modal.querySelector('.card[at-type="trigger"] .card-body')
-                this.$actions = this.modal.querySelector('.card[at-type="action"] .card-body')
-
-                if (action === 'add') {
-                    this.data = {
-                        id: '',
-                        enabled: true,
-                        name: '',
-                        matchType: '0',
-                        triggers: [],
-                        actions: []
-                    }
-                    this.$delBtn.style.display = 'none'
-                    this.$title.textContent = 'Add new automation'
-                } else {
-                    this.oldData = duplicateObject(data)
-                    this.$delBtn.style.display = 'block'
-                    this.$title.textContent = 'Edit automation'
-                }
-
-                this._load()
-                this.$name.value = data.name || ''
-                if (!isNaN(Number(data.matchType))) {
-                    this.$matchType.querySelectorAll('.select-option').forEach(opt => opt.removeAttribute('selected'))
-                    this.$matchType.querySelector(`[value="${data.matchType}"]`)?.setAttribute('selected', '')
-                }
-
-                new bootstrap.Modal(this.modal).show()
-            }
-
-            // clear all items from HTML then reload data
-            _load() {
-                this.$triggers.querySelectorAll('.at-item.at-edit').forEach(item => item.remove())
-                this.$actions.querySelectorAll('.at-item.at-edit').forEach(item => item.remove())
-                this.data.triggers.forEach((trigger, index) => {
-                    trigger.index = index
-                    this._appendHTML('trigger', trigger)
-                })
-                this.data.actions.forEach((action, index) => {
-                    action.index = index
-                    this._appendHTML('action', action)
-                })
-            }
-
-            // get item by index from HTML
-            _get(type, index) {
-                let el = this.modal.querySelector(`.card[at-type="${type}"] .at-item.at-edit[index="${index}"]`)
-                if (el) {
-                    return {
-                        el,
-                        index: index,
-                        did: el.getAttribute('did'),
-                        dname: el.getAttribute('dname'),
-                        atType: el.getAttribute('type'),
-                        prop: el.getAttribute('prop'),
-                        value: el.getAttribute('value')
-                    }
-                }
-                return null
-            }
-
-            // set item by index to HTML, if not exists, add new
-            _set(type, data) {
-                let el = this._get(type, data.index)
-                if (!el) {
-                    this._add(type, data)
-                } else {
-                    this.data[`${type}s`][data.index] = data
-                    el.el.querySelector('.title').innerHTML = data.value
-                    el.el.querySelector('.subtitle').innerHTML = `${data.dname} | ${data.prop}`
-                    el.el.setAttribute('did', data.did)
-                    el.el.setAttribute('type', data.atType)
-                    el.el.setAttribute('dname', data.dname)
-                    el.el.setAttribute('prop', data.prop)
-                    el.el.setAttribute('value', data.value)
-                }
-            }
-
-            // add new item to HTML, if exists, show error
-            _add(type, data) {
-                let index = this.data[`${type}s`].findIndex(item => item.did == data.did && item.prop == data.prop && item.value == data.value)
-                if (index >= 0) {
-                    Confirm.show('Duplicate', 'This item already exists', 'OK')
-                    return
-                }
-                this.data[`${type}s`].push(data)
-                data.index = this.data[`${type}s`].length - 1
-                this._appendHTML(type, data)
-            }
-
-            // append item to HTML
-            _appendHTML(type, data) {
-                let index = Number(data.index)
-                if (isNaN(index)) return
-                let el = document.createElement('div')
-                el.className = 'at-item at-edit'
-                el.setAttribute('index', index)
-                el.setAttribute('did', data.did)
-                el.setAttribute('type', data.atType)
-                el.setAttribute('dname', data.dname)
-                el.setAttribute('prop', data.prop)
-                el.setAttribute('value', data.value)
-                el.innerHTML = `
-                    <div class="index">${index + 1}</div>
-                    <div class="content">
-                        <div class="title">${data.value}</div>
-                        <div class="subtitle">${data.dname} | ${data.prop}</div>
-                    </div>`
-                this.modal.querySelector(`.card[at-type="${type}"] .card-body`).insertBefore(el, this.modal.querySelector(`.card[at-type="${type}"] .card-body .at-new`))
-            }
-
-            // remove item from HTML then reload data
-            _remove(type, index) {
-                this.modal.querySelector(`.card[at-type="${type}"] .at-item.at-edit[index="${index}"]`)?.remove()
-                if (this.data[`${type}s`].length) {
-                    this.data[`${type}s`].splice(index, 1)
-                }
-                this._load()
-            }
-
-            destroy() {
-                ATModal.currentModal = null
-                bootstrap.Modal.getInstance(this.modal)?.hide()
-                document.querySelectorAll('.modal-backdrop').forEach(m => m.remove())
-                this.atObject?.handleChanges(this.data)
-            }
-
-            save() {
-                const { $name, $triggers, $actions, $matchType, data } = this
-                const name = $name.value
-                const match = $matchType.querySelector('.select-option[selected]')?.getAttribute('value')
-                const triggers = data.triggers
-                const actions = data.actions
-                if (name == '' || isNaN(match) || triggers.length == 0 || actions.length == 0) {
-                    Confirm.show('Please fill all fields', 'Name, match type, triggers and actions are required', 'OK')
-                    return
-                }
-                data.name = name
-                data.matchType = match
-                // this.sendSaveRequest(data)
-                data.lastAction = this.action === 'add' ? 'add' : 'save'
-                console.log(data)
-                this.destroy()
-            }
-
-            discard() {
-                if (this.action === 'edit') {
-                    this.data = this.oldData
-                }
-                this.data.lastAction = 'discard'
-                this.destroy()
-            }
-
-            delete() {
-                // this.sendDeleteRequest(this.data)
-                this.data.lastAction = 'delete'
-                this.destroy()
-            }
-
-            handleItemAction(data) {
-                console.log(data)
-
-                if (data.lastAction == 'delete') {
-                    this._remove(data.type, data.index)
-                } else if (data.lastAction == 'save') {
-                    this._set(data.type, data)
-                }
-
-                new bootstrap.Modal('#atEditModal').show()
-                ATModal.currentModal = data.previousModal
-            }
-        }
 
 
-        class Automation {
 
-            static instances = []
 
-            constructor(data) {
-                this.data = data || {}
-                this.el = null
-                this.init()
-                Automation.instances.push(this)
-            }
-
-            init() {
-                if (!this.isValid()) return
-                this.el = document.createElement('div')
-                this.el.setAttribute('at-id', this.data.id || '')
-                this.el.className = 'card card-1 card-at mb-5'
-                this.el.innerHTML = `<div class="card-body d-flex align-items-center p-4">
-                        <span class="fs-4 fw-medium" role="at-name">${this.data.name}</span>
-                        <div class="ms-auto form-check form-check-lg form-switch">
-                            <input class="form-check-input" type="checkbox" action="atEnableToggle" ${this.data.enabled ? 'checked' : ''}>
-                        </div>
-                    </div>`
-                this.el.addEventListener('click', (e) => {
-                    const action = e.target.getAttribute('action')
-                    if (action === 'atEnableToggle') {
-                        this.enable(e.target.checked)
-                    } else {
-                        new ATEdit('edit', this.data, this)
-                    }
-                })
-            }
-
-            HTMLObject() {
-                return this.el
-            }
-
-            handleChanges(data) {
-                this.data = data
-                if (data.lastAction == 'delete') {
-                    this.remove()
-                } else if (data.lastAction == 'save') {
-                    console.log('save', data)
-                    this.update()
-                } else if (data.lastAction == 'discard') {
-                    console.log('discard', data)
-                    if (!this.el) {
-                        // remove instance
-                    }
-                } else if (data.lastAction == 'add') {
-                    console.log('add', data)
-                    this.init()
-                    this.appendTo($main)
-                    this._disableUI()
-                    this.add((data) => {
-                        if (!data || !data.success || !data.id) {
-                            this.el.remove()
-                            // remove instance
-                            return
-                        }
-                    })
-                }
-            }
-
-            _disableUI(disable = true) {
-                if (!this.el) return
-                if (disable) {
-                    this.el.style.opacity = 0.3
-                    this.el.style.pointerEvents = 'none'
-                } else {
-                    this.el.style.opacity = 1
-                    this.el.style.pointerEvents = 'auto'
-                }
-            }
-
-            isValid() {
-                return this.data && this.data.name && this.data.triggers && this.data.actions && this.data.triggers.length && this.data.actions.length
-            }
-
-            enable(enable = true, callback) {
-                if (!this.isValid()) return
-                console.log(`enabling AT ${this.data.name}[${this.data.id}] -> ${enable}`)
-                this._disableUI()
-                const $el = this.el.querySelector('[action="atEnableToggle"]')
-                let url = baseURI + '/auto/enable?id=' + this.data.id
-                if (!enable) url += '&disable=1'
-                GET(url)
-                    .then(data => {
-                        this._disableUI(false)
-                        if (data.success === true) {
-                            notify('success', `Automation "${this.data.name}" ${enable ? 'enabled' : 'disabled'} successfully`)
-                            this.data.enabled = enable
-                        } else {
-                            notify('failure', `Failed to ${enable ? 'enable' : 'disable'} automation "${this.data.name}": ${data.message}`)
-                            $el.checked = !enable
-                        }
-                        if (callback) callback(data)
-                    })
-                    .catch(err => {
-                        this._disableUI(false)
-                        notify('failure', `Failed to ${enable ? 'enable' : 'disable'} automation "${this.data.name}": ${err.message}`)
-                        $el.checked = !enable
-                        if (callback) callback(null)
-                    })
-            }
-
-            remove(callback) {
-                if (!this.isValid()) return
-                console.log(`removing AT ${this.data.name}[${this.data.id}]`)
-
-                this._disableUI()
-                Loading.circle()
-                GET(baseURI + '/auto/remove?id=' + this.data.id)
-                    .then(data => {
-                        Loading.remove()
-                        if (data.success === true) {
-                            notify('success', `Automation "${this.data.name}" deleted successfully`)
-                            this.el.remove()
-                            setTimeout(() => location.reload(), 1500)
-                        } else {
-                            notify('failure', `Failed to delete automation "${this.data.name}": ${data.message}`)
-                            this.el.style.opacity = 1
-                        }
-                        if (callback) callback(data)
-                    })
-                    .catch(err => {
-                        Loading.remove()
-                        this._disableUI(false)
-                        notify('failure', `Failed to delete automation "${this.data.name}": ${err.message}`)
-                        if (callback) callback(null)
-                    })
-            }
-
-            add(callback) {
-                this.update(callback)
-            }
-
-            update(callback) {
-                if (!this.isValid()) {
-                    notify('failure', `Automation "${this.data.name}" is not valid`)
-                    if (callback) callback(null)
-                    return
-                }
-                let isAdd = !this.data.id
-                const notiStr = isAdd ? 'Add' : 'Updat'
-
-                const { el, data } = this
-                this._disableUI()
-                let url = baseURI + '/auto/add-update'
-                if (data.id) {
-                    url += '?id=' + data.id
-                }
-
-                // format data
-                let dataStr = ''
-                dataStr += `${data.enabled ? '1' : '0'}\n`
-                dataStr += `${data.name}\n`
-                dataStr += `${data.matchType}\n`
-                for (const trigger of data.triggers) {
-                    if (trigger.atType == '2') {
-                        dataStr += `2|${trigger.did}|${trigger.prop}|${trigger.value}\n`
-                    }
-                }
-                dataStr += '\r\n'
-                for (const action of data.actions) {
-                    if (action.atType == '2') {
-                        dataStr += `2|${action.did}|${action.prop}|${action.value}\n`
-                    }
-                }
-                dataStr += '\r\n'
-
-                console.log(`${notiStr}ing AT`, data.name, data.id)
-                console.log(url)
-                console.log(data)
-                console.log(dataStr)
-
-                POST(url, dataStr)
-                    .then(jsondata => {
-                        this._disableUI(false)
-                        let isSuccess = false
-                        if (jsondata.success === true) {
-                            if (isAdd) {
-                                isSuccess = jsondata.id ? true : false
-                            } else {
-                                isSuccess = true
-                            }
-                        }
-                        if (isSuccess) {
-                            notify('success', `Automation "${data.name}" ${notiStr}ed successfully`)
-                            try {
-                                el.querySelector('[role="at-name"]').textContent = data.name
-                                el.querySelector('[action="atEnableToggle"]').checked = data.enabled
-                                if (jsondata.id) {
-                                    data.id = jsondata.id
-                                    el.setAttribute('at-id', jsondata.id)
-                                }
-                            } catch (e) { }
-                        } else {
-                            notify('failure', `Failed to update automation "${data.name}": ${jsondata.message}`)
-                        }
-                        if (callback) callback(jsondata)
-                    })
-                    .catch(err => {
-                        this._disableUI(false)
-                        notify('failure', `Failed to update automation "${data.name}": ${err.message}`)
-                        if (callback) callback(null)
-                    })
-            }
-
-            appendTo(parent) {
-                parent?.appendChild(this.el)
-            }
-
-        }
 
 
         ATModal.init()
@@ -1052,54 +533,96 @@
         }, 300)
 
 
-        GetDevices()
-            .then(data => {
-                Devices = data
-            })
 
-        Loading.circle()
-
-        GET(baseURI + '/auto/get')
-            .then(data => {
-                Loading.remove()
-                console.log(data)
-                if (!data || !Array.isArray(data) || !data.length) return
-                Automations = data
-                    .filter(at => {
-                        return at.triggers.length && at.triggers.every(t => t.type == '2') && at.actions.length && at.actions.every(a => a.type == '2')
-                    })
-                    .map(at => {
-                        at.matchType = at.match
-                        for (const t of at.triggers) {
-                            t.atType = t.type
-                            if (t.type == '2') {
-                                t.did = t.first
-                                t.dname = Devices.find(d => d.did == t.did)?.name || 'Unknown'
-                                t.prop = t.second
-                                t.value = t.third
-                            }
-                        }
-                        for (const a of at.actions) {
-                            a.atType = a.type
-                            if (a.type == '2') {
-                                a.did = a.first
-                                a.dname = Devices.find(d => d.did == a.did)?.name || 'Unknown'
-                                a.prop = a.second
-                                a.value = a.third
-                            }
-                        }
-                        return at
-                    })
-                console.log(Automations)
-                Automations.forEach(data => {
-                    const el = new Automation(data)
-                    el.appendTo($main)
+        const rederAT = (data) => {
+            return data
+                .filter(at => {
+                    return at.triggers.length && at.triggers.every(t => t.type == '2') && at.actions.length && at.actions.every(a => a.type == '2')
                 })
-            })
-            .catch(err => {
-                Loading.remove()
-                notify('failure', `Failed to load automations: ${err.message}`)
-            })
+                .map(at => {
+                    at.matchType = at.match
+                    for (const t of at.triggers) {
+                        t.atType = t.type
+                        if (t.type == '2') {
+                            t.did = t.first
+                            t.dname = Devices.find(d => d.did == t.did)?.name || 'Unknown'
+                            t.prop = t.second
+                            t.value = t.third
+                        }
+                    }
+                    for (const a of at.actions) {
+                        a.atType = a.type
+                        if (a.type == '2') {
+                            a.did = a.first
+                            a.dname = Devices.find(d => d.did == a.did)?.name || 'Unknown'
+                            a.prop = a.second
+                            a.value = a.third
+                        }
+                    }
+                    return at
+                })
+        }
+
+
+        // GetDevices()
+        //     .then(data => {
+        //         Devices = data
+        //     })
+
+        // Loading.circle()
+
+        // GET(baseURI + '/auto/get')
+        //     .then(data => {
+        //         Loading.remove()
+        //         console.log(data)
+        //         if (!data || !Array.isArray(data) || !data.length) return
+        //         Automations = data
+        //             .filter(at => {
+        //                 return at.triggers.length && at.triggers.every(t => t.type == '2') && at.actions.length && at.actions.every(a => a.type == '2')
+        //             })
+        //             .map(at => {
+        //                 at.matchType = at.match
+        //                 for (const t of at.triggers) {
+        //                     t.atType = t.type
+        //                     if (t.type == '2') {
+        //                         t.did = t.first
+        //                         t.dname = Devices.find(d => d.did == t.did)?.name || 'Unknown'
+        //                         t.prop = t.second
+        //                         t.value = t.third
+        //                     }
+        //                 }
+        //                 for (const a of at.actions) {
+        //                     a.atType = a.type
+        //                     if (a.type == '2') {
+        //                         a.did = a.first
+        //                         a.dname = Devices.find(d => d.did == a.did)?.name || 'Unknown'
+        //                         a.prop = a.second
+        //                         a.value = a.third
+        //                     }
+        //                 }
+        //                 return at
+        //             })
+        //         console.log(Automations)
+        //         Automations.forEach(data => {
+        //             const el = new Automation(data)
+        //             el.appendTo($main)
+        //         })
+        //     })
+        //     .catch(err => {
+        //         Loading.remove()
+        //         notify('failure', `Failed to load automations: ${err.message}`)
+        //     })
+
+        Automations = rederAT(Automations)
+        Automations.forEach(data => {
+            const el = new Automation(data)
+            el.appendTo($main)
+        })
+
+
+        new bootstrap.Modal('#atEditPeriodModal').show()
+
+
     </script>
 
 </body>

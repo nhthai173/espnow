@@ -11,6 +11,12 @@ div#NotiflixNotifyWrap {
   font-family: var(--bs-body-font-family) !important;
 }
 
+.d-flex-center {
+  display: flex;  
+  align-items: center;
+  justify-content: start!important;
+}
+
 .main-navbar .nav-link {
   color: rgba(0 0 0 / 40%);
 }
@@ -44,6 +50,16 @@ div#NotiflixNotifyWrap {
 
 .form-select:disabled {
     opacity: 0.4;
+}
+
+
+.form-check-lg:not(.form-switch) .form-check-input[type="checkbox"] {
+  width: 1.5em!important;
+  height: 1.5em!important;
+}
+.form-check-input[type="checkbox"].form-check-circle {
+  border-radius: 100%!important;
+  --bs-form-check-bg-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='-4 -4 8 8'%3e%3ccircle r='3' fill='%23fff'/%3e%3c/svg%3e")
 }
 
 @media (max-width: 767px) {
