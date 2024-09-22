@@ -5,23 +5,26 @@
 // uint8_t gw_mac[] = {0x2C, 0x3A, 0xE8, 0x3D, 0xF3, 0x8D};
 // uint8_t node_mac[] = {0x40, 0x91, 0x51, 0x5A, 0x5E, 0xFA};
 
+//#define USE_OLED
+
 #include <espnow-node.h>
-
-#include <Adafruit_GFX.h>
-#include <Adafruit_SSD1306.h>
 #include "OneButton.h"
-
-#define SCREEN_WIDTH 128
-#define SCREEN_HEIGHT 64
 
 Ticker ticker;
 ENNodeInfo NodeInfo;
 
-Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
-OneButton button(12, true);
+OneButton button(0, true);
 String buttonValue = "idle";
 
 WiFiEventHandler stationConnectedHandler;
+
+#ifdef USE_OLED
+
+#include <Adafruit_GFX.h>
+#include <Adafruit_SSD1306.h>
+#define SCREEN_WIDTH 128
+#define SCREEN_HEIGHT 64
+Adafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 
 void displayForSeconds(uint16_t seconds) {
     display.display();
@@ -45,6 +48,8 @@ void displayGatewayInfo() {
     display.display();
 }
 
+#endif // USE_OLED
+
 void setup() {
     // IO
     pinMode(LED_BUILTIN, OUTPUT);
@@ -57,11 +62,25 @@ void setup() {
 
     delay(5000);
 
+#ifdef USE_OLED
+
     // Start display
     if (!display.begin(SSD1306_SWITCHCAPVCC, 0x3C)) {
         Serial.println(F("SSD1306 allocation failed"));
         for (;;);
     }
+
+    // Initialize display
+    display.clearDisplay();
+    display.setTextSize(1);
+    display.setTextColor(WHITE);
+    // display.setRotation(0);
+
+    display.setCursor(0, 0);
+    display.println("Ready");
+    display.display();
+
+#endif // USE_OLED
 
     // init espnow
     Serial.print("ESP Board MAC Address:  ");
@@ -79,32 +98,26 @@ void setup() {
 
     WiFi.printDiag(Serial);
 
-    // Initialize display
-    display.clearDisplay();
-    display.setTextSize(1);
-    display.setTextColor(WHITE);
-    // display.setRotation(0);
-
-    display.setCursor(0, 0);
-    display.println("Ready");
-    display.display();
-
     button.attachLongPressStart([]() {
         Serial.println("Enter pairing mode");
         Node.startPairing();
+#ifdef USE_OLED
         display.clearDisplay();
         display.setCursor(0, 0);
         display.println("Pairing");
         display.display();
+#endif // USE_OLED
         ticker.detach();
         ticker.attach(1, []() {
             schedule_function([](){
                 if (Node.isPaired())
                     return;
+#ifdef USE_OLED
                 display.clearDisplay();
                 display.setCursor(0, 0);
                 display.printf("Pairing: %ds", Node.pairingRemaining());
                 display.display();
+#endif // USE_OLED
             });
         });
     });
@@ -158,24 +171,33 @@ void setup() {
     Node.nodeInfo(&NodeInfo);
 
     Node.onPairingTimeout([]() {
+        Serial.println("Pairing timeout");
+#ifdef USE_OLED
         display.clearDisplay();
         display.setCursor(0, 0);
         display.printf("Pairing -> timeout");
         displayForSeconds(5);
+#endif // USE_OLED
     });
 
     Node.onPairingSuccess([]() {
+        Serial.println("Pairing success");
+#ifdef USE_OLED
         display.clearDisplay();
         display.setCursor(0, 0);
         display.printf("Pairing -> success\nGW ID: %s\nChannel: %d", Node.gatewayId().c_str(), Node.gatewayChannel());
         displayForSeconds(10);
+#endif // USE_OLED
     });
 
     Node.onCommand([](const String& cmd, const String& value) {
+        Serial.printf("Command: %s, Value: %s\n", cmd.c_str(), value.c_str());
+#ifdef USE_OLED
         display.clearDisplay();
         display.setCursor(0, 0);
         display.printf("%s: %s", cmd.c_str(), value.c_str());
         displayForSeconds(5);
+#endif // USE_OLED
     });
 
     // esp_now_register_send_cb([](uint8_t *mac, uint8_t status) {
@@ -183,14 +205,32 @@ void setup() {
     //                   mac[5]);
     // });
 
+#ifdef USE_OLED
     displayGatewayInfo();
     displayForSeconds(10);
+#endif // USE_OLED
+    Serial.printf("GW ID: %s - Channel: %d\n", Node.gatewayId().c_str(), Node.gatewayChannel());
 
-    Node.sendSyncProps();
+    if (Node.isPaired()) {
+        Node.sendSyncProps();
+    }
 
 } // setup
 
 
 void loop() {
     button.tick();
+
+    // enter paring mode from serial
+    if (Serial.available()) {
+        String cmd = Serial.readStringUntil('\n');
+        cmd.trim();
+        if (cmd == "pair") {
+            Serial.println("Enter pairing mode");
+            Node.startPairing();
+        } else if (cmd == "unpair") {
+            Serial.println("Unpairing");
+//            Node.unpair();
+        }
+    }
 }
