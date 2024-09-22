@@ -8,7 +8,6 @@
 #include "Arduino.h"
 #include "espnow-gateway.h"
 #include <vector>
-#include "LittleFS.h"
 
 #define AUTOMATIONS_DEBUG
 
@@ -71,7 +70,7 @@ private:
     std::vector<automation_t> _atMatches{};
 
     bool _isExist(uint16_t id) {
-        File f = LittleFS.open(dir + String(id), "r");
+        File f = ENFS.open(dir + String(id), "r");
         if (f && f.size()) {
             f.close();
             return true;
@@ -145,11 +144,11 @@ private:
     }
 
     void removeFile(uint16_t id) {
-        LittleFS.remove(dir + String(id));
+        ENFS.remove(dir + String(id));
     }
 
     bool printToFile(const automation_t &automation) {
-        File f = LittleFS.open(dir + String(automation.id), "w");
+        File f = ENFS_W(dir + String(automation.id));
         if (!f) {
             AT_Print("[Error][Automation][add] failed to open file\n");
             return false;
@@ -173,9 +172,9 @@ private:
 public:
 
     AutomationClass() {
-        LittleFS.begin();
-        if (!LittleFS.exists(dir)) {
-            LittleFS.mkdir(dir);
+//        ENFS.begin();
+        if (!ENFS.exists(dir)) {
+            ENFS.mkdir(dir);
         }
 //        load();
     }
@@ -239,7 +238,7 @@ public:
             id = generateUid();
         }
         String fileName = dir + String(id);
-        File f = LittleFS.open(fileName, "w");
+        File f = ENFS_W(fileName);
         if (!f) {
             AT_Print("[Error][Automation][addRaw] failed to open file\n");
             return false;
@@ -248,7 +247,7 @@ public:
         f.close();
 
         // Parse again to validate
-        f = LittleFS.open(fileName, "r");
+        f = ENFS.open(fileName, "r");
         if (!f) {
             AT_Print("[Error][Automation][addRaw] failed to open file\n");
             return false;
@@ -335,25 +334,26 @@ public:
     }
 
     void load() {
-        Dir d = LittleFS.openDir(dir);
+#ifdef ESP8266
+        Dir d = ENFS.openDir(dir);
         while (d.next()) {
             if (d.isDirectory() || (d.isFile() && !d.fileSize())) {
                 continue;
             }
-
             AT_Print("Loading automation [%s]\n", d.fileName().c_str());
-
             File f = d.openFile("r");
-            // <enabled>\n
-            // <name>\n
-            // <match_type>\n
-            // <type>|<first>|<second>|<third>\n
-            // ...\n
-            // \r\n
-            // <type>|<first>|<second>|<third>\n
-            // ...\n
-            // \r\n
-
+#else // ESP32
+        File d = ENFS.open(dir);
+        if (!d || !d.isDirectory()) {
+            AT_Print("[Error][Automation][load] failed to open directory\n");
+            return;
+        }
+        File f = d.openNextFile("r");
+        while (f) {
+            if (f.isDirectory() || !f.size())
+                continue;
+            AT_Print("Loading automation [%s]\n", f.name());
+#endif
             automation_t a = _parseAutomation(f);
             f.close();
             if (a.id && a.name && !a.conditions.empty() && !a.actions.empty()) {
@@ -361,6 +361,9 @@ public:
             } else {
                 removeFile(a.id);
             }
+#ifdef ESP32
+            f = d.openNextFile("r");
+#endif
         }
     }
 
@@ -443,5 +446,20 @@ public:
 };
 
 AutomationClass Automations;
+
+
+
+/* Automation format */
+// <enabled>\n
+// <name>\n
+// <match_type>\n
+// <type>|<first>|<second>|<third>\n
+// ...\n
+// \r\n
+// <type>|<first>|<second>|<third>\n
+// ...\n
+// \r\n
+
+
 
 #endif //ESPNOW_GATEWAY_AUTOMATIONS_H

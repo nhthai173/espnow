@@ -3,7 +3,15 @@
 #include "espnow-gateway.h"
 #include "OneButton.h"
 #include <ESPAsyncWebServer.h>
+
+
+//#define USE_AUTOMATIONS
+
+#ifdef USE_AUTOMATIONS
 #include "Automations.h"
+#endif
+
+//#include "Automations.h"
 
 // #include "DevicePage.h"
 
@@ -32,8 +40,10 @@ void setup() {
     Serial.print("ESP Board MAC Address:  ");
     Serial.println(WiFi.macAddress());
 
+#ifdef USE_AUTOMATIONS
     Serial.println("======= Load automations =======");
     Automations.load();
+#endif
 
     WiFi.mode(WIFI_AP_STA);
     Serial.print("Connecting to WiFi..");
@@ -80,12 +90,13 @@ void setup() {
     Gateway.onPairingStart([](){
         Serial.println("Pairing start");
         ws.textAll("PAIRING_START");
-        ticker.attach_ms_scheduled(1000, [](){
+        ticker.attach_ms(1000, [](){
             int8_t remaining = Gateway.getPairingRemaining();
             if (remaining <= 0) {
                 ticker.detach();
                 return;
             }
+            Serial.printf("> Pairing remaining: %d\n", remaining);
             ws.textAll("PAIRING_REMAINING_" + String(remaining) + "_" + String(Gateway.getPairingTimeout()));
         });
     });
@@ -107,13 +118,14 @@ void setup() {
         sep.forEach([id, data](const String &prop){
             String value = data->getParam(prop);
             ws.textAll("PROPCHANGED_" + id + "_" + prop + "_" + value);
-            
+
+#ifdef USE_AUTOMATIONS
             // Get automations match with this device and property
             uint8_t matchesCnt = Automations.matches(id, prop, value);
             for (uint8_t i = 0; i < matchesCnt; i++) {
                 automation_t at = Automations.getMatch(i);
                 Serial.printf("==> Executing AT[%d]: %s\n", at.id, at.name.c_str());
-                
+
                 bool execute = false; // can execute this automation
                 if (at.conditions.size() > 1) {
                     // Have multiple conditions
@@ -159,7 +171,9 @@ void setup() {
                         }
                     }
                 }
-            }
+            } // End automation
+#endif
+
         });
     });
 
@@ -268,6 +282,7 @@ void setup() {
         req->send(res);
     });
 
+#ifdef USE_AUTOMATIONS
     sv.on("/auto/enable", [](AsyncWebServerRequest *req){
         AsyncWebServerResponse *res;
         uint16_t id = req->arg("id").toInt();
@@ -314,12 +329,14 @@ void setup() {
         Automations.removeAll();
         req->send(200, "text/plain", "success");
     });
+#endif
 
     sv.onNotFound([](AsyncWebServerRequest *req) {
         req->send(404, "text/plain", "Not Found");
     });
 
     sv.onRequestBody([](AsyncWebServerRequest *req, uint8_t *data, size_t len, size_t index, size_t total) {
+#ifdef USE_AUTOMATIONS
         if (req->url() == "/auto/add-update") {
             
             if (index == 0) {
@@ -346,6 +363,7 @@ void setup() {
                 req->send(res);
             }
         }
+#endif
     });
 
     sv.begin();
@@ -370,4 +388,5 @@ void setup() {
 void loop() {
     button.tick();
     ws.cleanupClients();
+    Gateway.loop();
 }
